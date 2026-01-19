@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap - FluexCode Bot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-header h1 {
+            color: #ff6b81;
+            margin-bottom: 10px;
+        }
+        
+        .login-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .login-method {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .login-method:hover {
+            border-color: #ff6b81;
+            transform: translateY(-5px);
+        }
+        
+        .login-method i {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #ff6b81;
+        }
+        
+        .twitch-login {
+            background: rgba(145, 70, 255, 0.2);
+        }
+        
+        .admin-login {
+            background: rgba(46, 213, 115, 0.2);
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: #ff6b81;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: #ff6b81;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: #ff4757;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            color: #ff6b81;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>FluexCode <span class="highlight">Bot</span></h1>
+            </div>
+            <nav class="nav">
+                <a href="/"><i class="fas fa-home"></i> Ana Sayfa</a>
+                <a href="/login" class="active"><i class="fas fa-sign-in-alt"></i> Giriş</a>
+                <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Panel</a>
+            </nav>
+        </header>
+
+        <div class="login-container">
+            <div class="login-header">
+                <h1><i class="fas fa-sign-in-alt"></i> Giriş Yap</h1>
+                <p>Bot kontrol paneline erişmek için giriş yapın</p>
+            </div>
+            
+            <div class="login-methods">
+                <!-- Twitch Login -->
+                <div class="login-method twitch-login" onclick="window.location.href='/auth/twitch'">
+                    <i class="fab fa-twitch"></i>
+                    <h3>Twitch ile Giriş Yap</h3>
+                    <p>Botun bağlanacağı kanalı seçmek için</p>
+                </div>
+                
+                <!-- Admin Login -->
+                <div class="login-method admin-login" onclick="document.getElementById('adminForm').style.display='block'">
+                    <i class="fas fa-user-shield"></i>
+                    <h3>Admin Girişi</h3>
+                    <p>Bot sahibi ve yönetici girişi</p>
+                </div>
+            </div>
+            
+            <!-- Admin Login Form (hidden by default) -->
+            <div id="adminForm" style="display: none; margin-top: 30px;">
+                <h3><i class="fas fa-lock"></i> Admin Şifresi</h3>
+                <input type="password" id="adminPassword" class="login-input" placeholder="Admin şifresini girin">
+                <button onclick="adminLogin()" class="login-btn">Admin Olarak Giriş Yap</button>
+                
+                <div id="adminError" style="color: #ff6b81; margin-top: 10px; display: none;">
+                    <i class="fas fa-exclamation-circle"></i> Yanlış şifre!
+                </div>
+            </div>
+            
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i> Ana Sayfaya Dön
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Admin Login
+        async function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('adminError');
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    errorDiv.style.display = 'block';
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 3000);
+                }
+            } catch (error) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Sunucu hatası!';
+            }
+        }
+        
+        // Enter tuşu ile login
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adminLogin();
+            }
+        });
+    </script>
+</body>
+</html>

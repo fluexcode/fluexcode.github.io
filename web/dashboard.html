@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontrol Paneli - FluexCode Bot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dashboard {
+            padding: 30px 0;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ff6b81;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .channel-selector {
+            margin-top: 20px;
+        }
+        
+        .channel-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .channel-input input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+        }
+        
+        .channel-input button {
+            padding: 12px 25px;
+            background: #ff6b81;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .quick-commands {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .quick-command {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-command:hover {
+            background: rgba(255,107,129,0.2);
+            transform: translateY(-3px);
+        }
+        
+        .logs {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .log-time {
+            color: #ff6b81;
+            margin-right: 10px;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,107,129,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <h3 id="username">Admin</h3>
+                    <p id="userRole">Bot Yöneticisi</p>
+                </div>
+            </div>
+            
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+            </button>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard">
+            <div class="dashboard-grid">
+                <!-- Bot Status Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-robot"></i> Bot Durumu</h3>
+                        <span class="status-dot online"></span>
+                    </div>
+                    
+                    <div class="bot-info">
+                        <p><strong>Kullanıcı:</strong> <span id="botUsername">fluexcode_bot</span></p>
+                        <p><strong>Mevcut Kanal:</strong> <span id="currentChannelDisplay">fluexcode</span></p>
+                        <p><strong>Çalışma Süresi:</strong> <span id="uptime">0s</span></p>
+                    </div>
+                    
+                    <div class="channel-selector">
+                        <h4><i class="fas fa-exchange-alt"></i> Kanal Değiştir</h4>
+                        <div class="channel-input">
+                            <input type="text" id="newChannel" placeholder="Kanal adı (örn: fluexcode)" value="fluexcode">
+                            <button onclick="changeChannel()">Değiştir</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Commands -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bolt"></i> Hızlı Komutlar</h3>
+                    </div>
+                    
+                    <div class="quick-commands">
+                        <div class="quick-command" onclick="sendCommand('!fluex')">
+                            <i class="fas fa-hand-wave"></i>
+                            <p>!fluex</p>
+                        </div>
+                        <div class="quick-command" onclick="sendCommand('!code')">
+                            <i class="fas fa-code"></i>
+                            <p>!code</p>
+                        </div>
+                        <div class="quick-command" onclick="sendCommand('!github')">
+                            <i class="fab fa-github"></i>
+                            <p>!github</p>
+                        </div>
+                        <div class="quick-command" onclick="sendCommand('!discord')">
+                            <i class="fab fa-discord"></i>
+                            <p>!discord</p>
+                        </div>
+                        <div class="quick-command" onclick="sendCommand('!yardim')">
+                            <i class="fas fa-question-circle"></i>
+                            <p>!yardim</p>
+                        </div>
+                        <div class="quick-command" onclick="sendCommand('!ping')">
+                            <i class="fas fa-network-wired"></i>
+                            <p>!ping</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4><i class="fas fa-terminal"></i> Özel Mesaj</h4>
+                        <div class="channel-input">
+                            <input type="text" id="customCommand" placeholder="Mesaj yazın...">
+                            <button onclick="sendCustomCommand()">Gönder</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Son Aktiviteler</h3>
+                        <button onclick="clearLogs()" style="background: none; border: none; color: #ff6b81; cursor: pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="logs" id="activityLogs">
+                        <div class="log-entry">
+                            <span class="log-time">[12:00:00]</span>
+                            <span>Panel yüklendi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bot Control -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-cogs"></i> Bot Kontrolleri</h3>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="login-btn" onclick="restartBot()">
+                            <i class="fas fa-redo"></i> Botu Yeniden Başlat
+                        </button>
+                        <button class="login-btn" onclick="disconnectBot()" style="background: #ff4757;">
+                            <i class="fas fa-power-off"></i> Botu Durdur
+                        </button>
+                        <button class="login-btn" onclick="connectBot()" style="background: #2ed573;">
+                            <i class="fas fa-plug"></i> Botu Bağla
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4><i class="fas fa-chart-bar"></i> İstatistikler</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2em; font-weight: bold;" id="messageCount">0</div>
+                                <small>Toplam Mesaj</small>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2em; font-weight: bold;" id="userCount">0</div>
+                                <small>Toplam Kullanıcı</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global değişkenler
+        let logs = [];
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBotStatus();
+            updateUptime();
+            setInterval(loadBotStatus, 5000); // 5 saniyede bir güncelle
+            setInterval(updateUptime, 1000);
+            
+            // Kanal bilgisini kontrol et
+            checkChannel();
+        });
+        
+        // Bot durumunu yükle
+        async function loadBotStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('currentChannelDisplay').textContent = data.channel;
+                document.getElementById('botUsername').textContent = data.bot;
+                document.getElementById('newChannel').value = data.channel;
+                
+                addLog(`Bot durumu: ${data.status}, Kanal: ${data.channel}`);
+            } catch (error) {
+                addLog('Bot durumu alınamadı', 'error');
+            }
+        }
+        
+        // Kanal değiştir
+        async function changeChannel() {
+            const newChannel = document.getElementById('newChannel').value.trim();
+            if (!newChannel) return;
+            
+            try {
+                const response = await fetch('/api/bot/channel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ channel: newChannel })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog(`Kanal değiştirildi: ${newChannel}`);
+                    document.getElementById('currentChannelDisplay').textContent = newChannel;
+                } else {
+                    addLog(`Hata: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addLog('Kanal değiştirilemedi', 'error');
+            }
+        }
+        
+        // Komut gönder
+        async function sendCommand(command) {
+            try {
+                const response = await fetch('/api/bot/command', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ command: command })
+                });
+                
+                const data = await response.json();
+                addLog(`Komut gönderildi: ${command}`);
+            } catch (error) {
+                addLog('Komut gönderilemedi', 'error');
+            }
+        }
+        
+        // Özel komut gönder
+        async function sendCustomCommand() {
+            const command = document.getElementById('customCommand').value.trim();
+            if (!command) return;
+            
+            sendCommand(command);
+            document.getElementById('customCommand').value = '';
+        }
+        
+        // Bot restart
+        async function restartBot() {
+            try {
+                const response = await fetch('/api/bot/restart', { method: 'POST' });
+                const data = await response.json();
+                addLog('Bot yeniden başlatıldı');
+            } catch (error) {
+                addLog('Bot restart edilemedi', 'error');
+            }
+        }
+        
+        // Log ekle
+        function addLog(message, type = 'info') {
+            const now = new Date();
+            const time = now.toLocaleTimeString('tr-TR');
+            const logEntry = {
+                time: time,
+                message: message,
+                type: type
+            };
+            
+            logs.unshift(logEntry); // Başa ekle
+            if (logs.length > 50) logs.pop(); // En fazla 50 log
+            
+            updateLogDisplay();
+        }
+        
+        // Log görüntüsünü güncelle
+        function updateLogDisplay() {
+            const logsContainer = document.getElementById('activityLogs');
+            logsContainer.innerHTML = '';
+            
+            logs.forEach(log => {
+                const logDiv = document.createElement('div');
+                logDiv.className = 'log-entry';
+                logDiv.innerHTML = `
+                    <span class="log-time">[${log.time}]</span>
+                    <span style="color: ${log.type === 'error' ? '#ff6b81' : 'white'}">
+                        ${log.message}
+                    </span>
+                `;
+                logsContainer.appendChild(logDiv);
+            });
+        }
+        
+        // Logları temizle
+        function clearLogs() {
+            logs = [];
+            updateLogDisplay();
+            addLog('Loglar temizlendi');
+        }
+        
+        // Çalışma süresini güncelle
+        function updateUptime() {
+            const uptimeElement = document.getElementById('uptime');
+            const currentUptime = uptimeElement.textContent;
+            
+            if (currentUptime === '0s') {
+                uptimeElement.textContent = '1s';
+            } else {
+                const seconds = parseInt(currentUptime);
+                uptimeElement.textContent = `${seconds + 1}s`;
+            }
+        }
+        
+        // Kanal kontrolü
+        async function checkChannel() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const channel = urlParams.get('channel');
+            
+            if (channel) {
+                document.getElementById('newChannel').value = channel;
+                changeChannel();
+                // URL'den channel parametresini kaldır
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+        
+        // Çıkış yap
+        function logout() {
+            localStorage.removeItem('admin');
+            window.location.href = '/';
+        }
+        
+        // İlk log
+        addLog('Kontrol paneli yüklendi');
+    </script>
+</body>
+</html>

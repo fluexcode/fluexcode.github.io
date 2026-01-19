@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FluexCode Bot Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>FluexCode <span class="highlight">Bot</span></h1>
+            </div>
+            <nav class="nav">
+                <a href="/" class="active"><i class="fas fa-home"></i> Ana Sayfa</a>
+                <a href="/login"><i class="fas fa-sign-in-alt"></i> Giri? Yap</a>
+                <a href="/dashboard"><i class="fas fa-tachometer-alt"></i> Panel</a>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h2>?? FluexCode Twitch Bot Kontrol Paneli</h2>
+                <p>Twitch kanal?n?z icin ozel geli?tirilmi? bot ve kontrol paneli</p>
+                
+                <div class="cta-buttons">
+                    <a href="/login" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Giri? Yap & Kanal Sec
+                    </a>
+                    <a href="/dashboard?admin=true" class="btn btn-secondary">
+                        <i class="fas fa-user-shield"></i> Admin Giri?i
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-image">
+                <div class="status-card">
+                    <h3><i class="fas fa-satellite-dish"></i> Bot Durumu</h3>
+                    <div class="status-indicator">
+                        <span class="status-dot online"></span>
+                        <span class="status-text">Cevrimici</span>
+                    </div>
+                    <p class="channel-info" id="currentChannel">Kanal: Yukleniyor...</p>
+                    <div class="stats">
+                        <div class="stat">
+                            <i class="fas fa-comments"></i>
+                            <span id="messageCount">0</span>
+                            <small>Mesaj</small>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-users"></i>
+                            <span id="userCount">0</span>
+                            <small>Kullan?c?</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features">
+            <h2>?? Ozellikler</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-cogs"></i>
+                    <h3>Otomatik Komutlar</h3>
+                    <p>!fluex, !code, !github gibi ozel komutlar</p>
+                </div>
+                
+                <div class="feature-card">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>Kanal De?i?tirme</h3>
+                    <p>Web panelden kanal de?i?tirebilme</p>
+                </div>
+                
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>?statistikler</h3>
+                    <p>Canl? izleyici ve mesaj istatistikleri</p>
+                </div>
+                
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Mobil Uyumlu</h3>
+                    <p>Tum cihazlardan eri?im</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Commands -->
+        <section class="commands">
+            <h2>? H?zl? Komutlar</h2>
+            <div class="command-list">
+                <div class="command-item">
+                    <code>!fluex</code>
+                    <span>Ho?geldin mesaj?</span>
+                </div>
+                <div class="command-item">
+                    <code>!code</code>
+                    <span>Kodlama kaynaklar?</span>
+                </div>
+                <div class="command-item">
+                    <code>!github</code>
+                    <span>GitHub ba?lant?s?</span>
+                </div>
+                <div class="command-item">
+                    <code>!discord</code>
+                    <span>Discord sunucusu</span>
+                </div>
+                <div class="command-item">
+                    <code>!yardim</code>
+                    <span>Tum komutlar</span>
+                </div>
+                <div class="command-item">
+                    <code>!ping</code>
+                    <span>Bot kontrolu</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>c 2023 FluexCode Bot | GitHub Actions ile 7/24 cal???r</p>
+            <div class="footer-links">
+                <a href="https://twitch.tv/fluexcode"><i class="fab fa-twitch"></i> Twitch</a>
+                <a href="https://github.com/fluexcode"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://discord.gg/fluexcode"><i class="fab fa-discord"></i> Discord</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Bot durumunu guncelle
+        async function updateBotStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('currentChannel').textContent = `Kanal: ${data.channel}`;
+                
+                // Mesaj say?s?n? art?r (simulasyon)
+                const msgCount = document.getElementById('messageCount');
+                msgCount.textContent = parseInt(msgCount.textContent) + Math.floor(Math.random() * 3);
+                
+            } catch (error) {
+                console.log('Status error:', error);
+            }
+        }
+        
+        // Her 10 saniyede bir guncelle
+        setInterval(updateBotStatus, 10000);
+        updateBotStatus();
+    </script>
+</body>
+</html>
