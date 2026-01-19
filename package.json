@@ -1,24 +1,13 @@
 {
   "name": "fluexcode-bot",
   "version": "1.0.0",
-  "description": "FluexCode Twitch Bot - Özel geliştirilmiş Twitch botu",
+  "description": "FluexCode Twitch Bot",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "fluexcode": "node index.js",
-    "dev": "nodemon index.js",
-    "panel": "node src/fluexcode-panel.js"
+    "start": "node index.js"
   },
-  "keywords": ["fluexcode", "twitch", "bot", "streaming"],
-  "author": "FluexCode",
-  "license": "MIT",
   "dependencies": {
     "tmi.js": "^1.8.5",
-    "express": "^4.18.2",
-    "dotenv": "^16.0.3",
-    "axios": "^1.3.4"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.20"
+    "dotenv": "^16.0.3"
   }
 }
