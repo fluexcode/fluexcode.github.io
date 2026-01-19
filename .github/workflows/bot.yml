@@ -1,0 +1,105 @@
+name: 🚀 Deploy FluexCode Bot
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_restart:
+        description: 'Force bot restart'
+        required: false
+        default: false
+
+env:
+  NODE_ENV: production
+  BOT_NAME: "FluexCode Bot"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hours max (GitHub Free limit)
+    
+    steps:
+    # 1. Checkout
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v3
+      
+    # 2. Setup Node.js
+    - name: ⚙️ Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    # 3. Install dependencies
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    # 4. Create .env file from GitHub Secrets
+    - name: 🔧 Create environment file
+      run: |
+        echo "BOT_USERNAME=${{ secrets.BOT_USERNAME }}" > .env
+        echo "BOT_OAUTH=${{ secrets.BOT_OAUTH }}" >> .env
+        echo "BOT_CLIENT_ID=${{ secrets.BOT_CLIENT_ID }}" >> .env
+        echo "BOT_CLIENT_SECRET=${{ secrets.BOT_CLIENT_SECRET }}" >> .env
+        echo "DEFAULT_CHANNEL=${{ secrets.DEFAULT_CHANNEL || 'fluexcode' }}" >> .env
+        echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD || 'fluexcode123' }}" >> .env
+        echo "SESSION_SECRET=${{ secrets.SESSION_SECRET || 'fluexcode-secret' }}" >> .env
+        echo "PORT=3000" >> .env
+        echo "NODE_ENV=production" >> .env
+        
+        echo "✅ .env file created"
+        echo "📄 First few chars of .env:"
+        head -c 100 .env
+        
+    # 5. Create data directory
+    - name: 📁 Create data directory
+      run: |
+        mkdir -p data
+        echo "${{ secrets.DEFAULT_CHANNEL || 'fluexcode' }}" > data/current_channel.txt
+        echo '{"users": [], "logs": []}' > data/users.json
+        
+    # 6. Start the bot
+    - name: 🚀 Start FluexCode Bot
+      run: |
+        echo "🤖 Starting ${{ env.BOT_NAME }}..."
+        
+        # Start server and bot
+        npm start &
+        SERVER_PID=$!
+        
+        echo "⏳ Waiting 30 seconds for startup..."
+        sleep 30
+        
+        # Check if server is running
+        if ps -p $SERVER_PID > /dev/null; then
+          echo "✅ ${{ env.BOT_NAME }} is running! PID: $SERVER_PID"
+          echo "🌐 Server: http://localhost:3000"
+          echo "📺 Channel: $(cat data/current_channel.txt)"
+          echo "👤 Bot: ${{ secrets.BOT_USERNAME }}"
+        else
+          echo "❌ Failed to start ${{ env.BOT_NAME }}"
+          echo "📋 Last 50 lines of log:"
+          tail -50 npm-debug.log || echo "No log file"
+          exit 1
+        fi
+        
+    # 7. Keep alive
+    - name: 🔄 Keep bot alive
+      run: |
+        echo "🔄 Keeping ${{ env.BOT_NAME }} alive for 6 hours..."
+        echo "⏰ GitHub Actions will auto-restart after 6 hours"
+        
+        minutes=0
+        while [ $minutes -lt 355 ]; do  # 5:55 hours (5 minutes before timeout)
+          sleep 60
+          minutes=$((minutes + 1))
+          
+          # Every 10 minutes
+          if [ $((minutes % 10)) -eq 0 ]; then
+            echo "✅ $minutes minutes: ${{ env.BOT_NAME }} is running"
+            echo "📊 Channel: $(cat data/current_channel.txt 2>/dev/null || echo 'unknown')"
+          fi
+        done
+        
+        echo "🔄 Preparing for auto-restart..."
