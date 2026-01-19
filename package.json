@@ -1,6 +1,7 @@
 {
   "name": "fluexcode-bot",
   "version": "1.0.0",
+<<<<<<< HEAD
   "description": "FluexCode Twitch Bot with Web Panel",
   "main": "server.js",
   "scripts": {
@@ -19,5 +20,15 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
+=======
+  "description": "FluexCode Twitch Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "tmi.js": "^1.8.5",
+    "dotenv": "^16.0.3"
+>>>>>>> b43167992c632454a80e3a254fedde3bbe7525c5
   }
 }
