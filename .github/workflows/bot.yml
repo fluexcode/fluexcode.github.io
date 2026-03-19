@@ -1,0 +1,88 @@
+name: Kick.com 7/24 Bot Servisi
+
+on:
+  schedule:
+    # Her saat başı çalışır (bot sürekli kontrol)
+    - cron: '0 * * * *'
+  workflow_dispatch:  # Manuel tetikleme
+  repository_dispatch:  # Webhook ile tetikleme
+
+jobs:
+  bot-service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 saat maksimum çalışma
+    
+    strategy:
+      matrix:
+        python-version: ['3.10']
+        
+    steps:
+    - name: 📥 Repo klonla
+      uses: actions/checkout@v3
+      
+    - name: 🐍 Python ${{ matrix.python-version }} kur
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        
+    - name: 📦 Bağımlılıkları yükle
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r bot/requirements.txt
+        
+    - name: 🔧 Konfigürasyon dosyası oluştur
+      run: |
+        mkdir -p bot/config
+        cat > bot/config/config.json << EOF
+        {
+          "username": "${{ secrets.KICK_USERNAME }}",
+          "password": "${{ secrets.KICK_PASSWORD }}",
+          "channel": "${{ secrets.KICK_CHANNEL }}",
+          "prefix": "${{ secrets.BOT_PREFIX || '!' }}",
+          "auto_respond": ${{ secrets.AUTO_RESPOND || 'true' }},
+          "command_cooldown": ${{ secrets.COMMAND_COOLDOWN || '5' }}
+        }
+        EOF
+        
+    - name: 📝 Log klasörü oluştur
+      run: |
+        mkdir -p bot/logs
+        echo "Bot başlatıldı: $(date)" > bot/logs/startup.log
+        
+    - name: 🤖 Bot'u çalıştır
+      id: run_bot
+      run: |
+        python bot/main.py
+      continue-on-error: true
+      
+    - name: 💾 Session kaydet
+      if: always()
+      run: |
+        echo "BOT_EXIT_CODE=${{ steps.run_bot.outcome }}" > bot_session.txt
+        echo "LAST_RUN=$(date)" >> bot_session.txt
+        
+    - name: 📊 Durum raporu
+      run: |
+        echo "### 🤖 Bot Çalışma Raporu" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Çalışma Zamanı:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Bot Durumu:** ${{ steps.run_bot.outcome }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Kanal:** ${{ secrets.KICK_CHANNEL }}" >> $GITHUB_STEP_SUMMARY
+        
+    - name: 📤 Logları arşivle
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: kick-bot-logs-${{ github.run_id }}
+        path: |
+          bot/logs/
+          bot/*.log
+          *.txt
+        retention-days: 30
+        
+    - name: ❌ Hata durumunda bildirim
+      if: failure()
+      run: |
+        echo "⚠️ Bot çalışırken hata oluştu!" >> $GITHUB_STEP_SUMMARY
+        echo "Tarih: $(date)" >> $GITHUB_STEP_SUMMARY
