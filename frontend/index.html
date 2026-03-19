@@ -1,1 +1,1008 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick.com Bot Kontrol Paneli</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
+        body {
+            background: #0e0e10;
+            color: #efeff1;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #1f1f23;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #303033;
+        }
+
+        .logo {
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo h2 {
+            color: #00ff00;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h2::before {
+            content: "🎯";
+            font-size: 28px;
+        }
+
+        .nav-menu {
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #adadb8;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #26262c;
+            color: white;
+        }
+
+        .nav-item.active {
+            background: #26262c;
+            color: #00ff00;
+            border-left-color: #00ff00;
+        }
+
+        .nav-item span {
+            font-size: 20px;
+        }
+
+        .bot-status {
+            margin: 20px;
+            padding: 15px;
+            background: #26262c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4444;
+            transition: all 0.3s;
+        }
+
+        .status-indicator.active {
+            background: #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Ana İçerik */
+        .content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #0e0e10;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #00ff00;
+            font-size: 28px;
+            border-bottom: 2px solid #303033;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        h3 {
+            color: #adadb8;
+            margin-bottom: 15px;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1f1f23;
+            padding: 25px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid #303033;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #00ff00;
+        }
+
+        .stat-icon {
+            font-size: 48px;
+        }
+
+        .stat-info h3 {
+            color: #adadb8;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        /* Butonlar */
+        .control-panel {
+            background: #1f1f23;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #303033;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-success {
+            background: #00ff00;
+            color: black;
+        }
+
+        .btn-success:hover {
+            background: #00cc00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+
+        .btn-warning {
+            background: #ff9900;
+            color: black;
+        }
+
+        .btn-primary {
+            background: #9147ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #772ce8;
+        }
+
+        /* Hızlı komutlar */
+        .quick-commands {
+            background: #1f1f23;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #303033;
+        }
+
+        .command-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .command-buttons button {
+            padding: 10px 20px;
+            background: #26262c;
+            border: 1px solid #303033;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .command-buttons button:hover {
+            background: #00ff00;
+            color: black;
+            border-color: #00ff00;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            background: #1f1f23;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #303033;
+        }
+
+        .message-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .message-input input {
+            flex: 2;
+            padding: 12px;
+            background: #26262c;
+            border: 1px solid #303033;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .message-input select {
+            flex: 1;
+            padding: 12px;
+            background: #26262c;
+            border: 1px solid #303033;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .message-input button {
+            padding: 12px 30px;
+            background: #00ff00;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .auto-messages {
+            margin: 20px 0;
+            padding: 20px;
+            background: #26262c;
+            border-radius: 8px;
+        }
+
+        .auto-message-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #1f1f23;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        .add-auto-message {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .add-auto-message input {
+            flex: 1;
+            padding: 10px;
+            background: #1f1f23;
+            border: 1px solid #303033;
+            border-radius: 6px;
+            color: white;
+        }
+
+        .chat-log {
+            height: 300px;
+            overflow-y: auto;
+            background: #26262c;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .chat-message {
+            padding: 8px;
+            border-bottom: 1px solid #303033;
+            color: #adadb8;
+        }
+
+        .chat-message strong {
+            color: #00ff00;
+        }
+
+        /* Komutlar */
+        .command-item {
+            background: #26262c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .command-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .command-name {
+            background: #1f1f23;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .command-permission {
+            padding: 3px 10px;
+            background: #303033;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-command {
+            background: #26262c;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .add-command input, .add-command select {
+            padding: 12px;
+            background: #1f1f23;
+            border: 1px solid #303033;
+            border-radius: 6px;
+            color: white;
+        }
+
+        /* Ayarlar */
+        .settings-form {
+            background: #1f1f23;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #303033;
+            max-width: 600px;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #adadb8;
+        }
+
+        .setting-group input {
+            width: 100%;
+            padding: 12px;
+            background: #26262c;
+            border: 1px solid #303033;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* Switch buton */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #303033;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #00ff00;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Log container */
+        .log-container {
+            background: #1f1f23;
+            padding: 20px;
+            border-radius: 12px;
+            height: 500px;
+            overflow-y: auto;
+            font-family: monospace;
+        }
+
+        .log-entry {
+            padding: 8px;
+            border-bottom: 1px solid #303033;
+            color: #adadb8;
+        }
+
+        .log-time {
+            color: #00ff00;
+            margin-right: 15px;
+        }
+
+        .log-level {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .log-level.info { background: #2d7a9e; color: white; }
+        .log-level.success { background: #00ff00; color: black; }
+        .log-level.error { background: #ff4444; color: white; }
+        .log-level.warning { background: #ff9900; color: black; }
+
+        .log-controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Kick Bot</h2>
+            </div>
+            <nav class="nav-menu">
+                <a class="nav-item active" onclick="changePage('dashboard')">
+                    <span>📊</span> Dashboard
+                </a>
+                <a class="nav-item" onclick="changePage('chat')">
+                    <span>💬</span> Chat Kontrol
+                </a>
+                <a class="nav-item" onclick="changePage('commands')">
+                    <span>⚡</span> Komutlar
+                </a>
+                <a class="nav-item" onclick="changePage('settings')">
+                    <span>⚙️</span> Ayarlar
+                </a>
+                <a class="nav-item" onclick="changePage('logs')">
+                    <span>📝</span> Loglar
+                </a>
+            </nav>
+            <div class="bot-status">
+                <div class="status-indicator" id="botStatus"></div>
+                <span id="statusText">Bot Kapalı</span>
+            </div>
+        </aside>
+
+        <!-- Ana İçerik -->
+        <main class="content">
+            <!-- Dashboard Sayfası -->
+            <section id="dashboard" class="page active">
+                <h1>Dashboard</h1>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3>İzleyici</h3>
+                            <p id="viewerCount">127</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💬</div>
+                        <div class="stat-info">
+                            <h3>Mesajlar</h3>
+                            <p id="messageCount">1,234</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <h3>Komutlar</h3>
+                            <p id="commandCount">42</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <h3>Çalışma Süresi</h3>
+                            <p id="uptime">02:34:12</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-panel">
+                    <h2>Bot Kontrol</h2>
+                    <div class="button-group">
+                        <button class="btn btn-success" onclick="controlBot('start')" id="startBtn">▶️ Başlat</button>
+                        <button class="btn btn-danger" onclick="controlBot('stop')" id="stopBtn">⏹️ Durdur</button>
+                        <button class="btn btn-warning" onclick="controlBot('restart')" id="restartBtn">🔄 Yeniden Başlat</button>
+                    </div>
+                </div>
+
+                <div class="quick-commands">
+                    <h2>Hızlı Komutlar</h2>
+                    <div class="command-buttons">
+                        <button onclick="sendQuickCommand('!merhaba')">!merhaba</button>
+                        <button onclick="sendQuickCommand('!yardım')">!yardım</button>
+                        <button onclick="sendQuickCommand('!sohbet')">!sohbet</button>
+                        <button onclick="sendQuickCommand('!kurallar')">!kurallar</button>
+                        <button onclick="sendQuickCommand('!sosyal')">!sosyal</button>
+                        <button onclick="sendQuickCommand('!discord')">!discord</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chat Kontrol Sayfası -->
+            <section id="chat" class="page">
+                <h1>Chat Kontrol</h1>
+                
+                <div class="chat-container">
+                    <div class="message-input">
+                        <input type="text" id="messageText" placeholder="Mesaj yaz...">
+                        <select id="messageType">
+                            <option value="normal">Normal</option>
+                            <option value="duyuru">📢 Duyuru</option>
+                            <option value="gizli">🤫 Gizli (Modlara)</option>
+                        </select>
+                        <button onclick="sendMessage()">Gönder</button>
+                    </div>
+                    
+                    <div class="auto-messages">
+                        <h3>Otomatik Mesajlar</h3>
+                        <div class="auto-message-list" id="autoMessageList"></div>
+                        <div class="add-auto-message">
+                            <input type="text" id="newAutoMessage" placeholder="Yeni otomatik mesaj">
+                            <input type="number" id="autoMessageInterval" placeholder="Saniye" min="5" value="60">
+                            <button class="btn btn-primary" onclick="addAutoMessage()">➕ Ekle</button>
+                        </div>
+                    </div>
+
+                    <div class="chat-log" id="chatLog"></div>
+                </div>
+            </section>
+
+            <!-- Komutlar Sayfası -->
+            <section id="commands" class="page">
+                <h1>Özel Komutlar</h1>
+                
+                <div class="commands-list" id="commandsList"></div>
+                
+                <div class="add-command">
+                    <h3>Yeni Komut Ekle</h3>
+                    <input type="text" id="commandName" placeholder="Komut adı (örn: oyun)">
+                    <input type="text" id="commandResponse" placeholder="Yanıt mesajı">
+                    <select id="commandPermission">
+                        <option value="everyone">Herkes</option>
+                        <option value="followers">Takipçiler</option>
+                        <option value="subscribers">Aboneler</option>
+                        <option value="mods">Moderatörler</option>
+                        <option value="vip">VIP</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="addCommand()">➕ Komut Ekle</button>
+                </div>
+            </section>
+
+            <!-- Ayarlar Sayfası -->
+            <section id="settings" class="page">
+                <h1>Bot Ayarları</h1>
+                
+                <div class="settings-form">
+                    <div class="setting-group">
+                        <label>Kick Kullanıcı Adı / Email:</label>
+                        <input type="text" id="kickUsername" placeholder="Kullanıcı adın veya email">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Kick Şifre:</label>
+                        <input type="password" id="kickPassword" placeholder="Şifren">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Hedef Kanal:</label>
+                        <input type="text" id="targetChannel" placeholder="Kanal adı">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Bot Prefix:</label>
+                        <input type="text" id="botPrefix" value="!" maxlength="2">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Otomatik Yanıt:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="autoRespond" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Mesaj Logları:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="messageLogs" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveSettings()">💾 Ayarları Kaydet</button>
+                </div>
+            </section>
+
+            <!-- Loglar Sayfası -->
+            <section id="logs" class="page">
+                <h1>Bot Logları</h1>
+                
+                <div class="log-controls">
+                    <button class="btn btn-danger" onclick="clearLogs()">🗑️ Temizle</button>
+                    <button class="btn btn-success" onclick="exportLogs()">📥 Dışa Aktar</button>
+                </div>
+                
+                <div class="log-container" id="logContainer"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Sayfa değiştirme
+        function changePage(pageName) {
+            // Tüm sayfaları gizle
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Seçili sayfayı göster
+            document.getElementById(pageName).classList.add('active');
+            
+            // Menü öğelerini güncelle
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Tıklanan menü öğesini aktif yap
+            event.currentTarget.classList.add('active');
+        }
+
+        // Bot kontrol
+        function controlBot(action) {
+            const statusIndicator = document.getElementById('botStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (action === 'start') {
+                statusIndicator.classList.add('active');
+                statusText.textContent = 'Bot Aktif';
+                addLog('Bot başlatıldı', 'success');
+            } else if (action === 'stop') {
+                statusIndicator.classList.remove('active');
+                statusText.textContent = 'Bot Kapalı';
+                addLog('Bot durduruldu', 'warning');
+            } else if (action === 'restart') {
+                statusIndicator.classList.add('active');
+                statusText.textContent = 'Bot Aktif (Yeniden Başladı)';
+                addLog('Bot yeniden başlatıldı', 'info');
+            }
+        }
+
+        // Mesaj gönder
+        function sendMessage() {
+            const message = document.getElementById('messageText').value;
+            const type = document.getElementById('messageType').value;
+            
+            if (!message) {
+                alert('Lütfen bir mesaj yazın!');
+                return;
+            }
+            
+            addLog(`Mesaj gönderildi (${type}): ${message}`, 'info');
+            document.getElementById('messageText').value = '';
+            
+            // Chat log'a ekle
+            const chatLog = document.getElementById('chatLog');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.innerHTML = `<strong>Bot:</strong> ${message} <span style="color: #666; font-size: 12px;">[${type}]</span>`;
+            chatLog.appendChild(messageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Hızlı komut gönder
+        function sendQuickCommand(command) {
+            addLog(`Hızlı komut gönderildi: ${command}`, 'success');
+            
+            const chatLog = document.getElementById('chatLog');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.innerHTML = `<strong>Bot:</strong> ${command} <span style="color: #00ff00;">[komut]</span>`;
+            chatLog.appendChild(messageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Otomatik mesaj ekle
+        function addAutoMessage() {
+            const message = document.getElementById('newAutoMessage').value;
+            const interval = document.getElementById('autoMessageInterval').value;
+            
+            if (!message) {
+                alert('Mesaj yazın!');
+                return;
+            }
+            
+            const list = document.getElementById('autoMessageList');
+            const item = document.createElement('div');
+            item.className = 'auto-message-item';
+            item.innerHTML = `
+                <span>📝 ${message} <span style="color: #666;">(her ${interval}s)</span></span>
+                <button class="btn btn-danger" style="padding: 5px 10px;" onclick="this.parentElement.remove()">Sil</button>
+            `;
+            list.appendChild(item);
+            
+            addLog(`Otomatik mesaj eklendi: ${message} (${interval}s)`, 'success');
+            
+            document.getElementById('newAutoMessage').value = '';
+        }
+
+        // Komut ekle
+        function addCommand() {
+            const name = document.getElementById('commandName').value;
+            const response = document.getElementById('commandResponse').value;
+            const permission = document.getElementById('commandPermission').value;
+            
+            if (!name || !response) {
+                alert('Komut adı ve yanıt gerekli!');
+                return;
+            }
+            
+            const list = document.getElementById('commandsList');
+            const item = document.createElement('div');
+            item.className = 'command-item';
+            
+            let permissionText = {
+                'everyone': 'Herkes',
+                'followers': 'Takipçiler',
+                'subscribers': 'Aboneler',
+                'mods': 'Moderatörler',
+                'vip': 'VIP'
+            }[permission];
+            
+            item.innerHTML = `
+                <div class="command-info">
+                    <span class="command-name">!${name}</span>
+                    <span>${response}</span>
+                    <span class="command-permission">${permissionText}</span>
+                </div>
+                <button class="delete-btn" onclick="this.parentElement.remove()">Sil</button>
+            `;
+            list.appendChild(item);
+            
+            addLog(`Komut eklendi: !${name}`, 'success');
+            
+            document.getElementById('commandName').value = '';
+            document.getElementById('commandResponse').value = '';
+        }
+
+        // Ayarları kaydet
+        function saveSettings() {
+            const settings = {
+                username: document.getElementById('kickUsername').value,
+                password: document.getElementById('kickPassword').value ? '********' : '',
+                channel: document.getElementById('targetChannel').value,
+                prefix: document.getElementById('botPrefix').value,
+                autoRespond: document.getElementById('autoRespond').checked,
+                messageLogs: document.getElementById('messageLogs').checked
+            };
+            
+            localStorage.setItem('kickBotSettings', JSON.stringify(settings));
+            addLog('Ayarlar kaydedildi', 'success');
+            alert('Ayarlar kaydedildi!');
+        }
+
+        // Log ekle
+        function addLog(message, level = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('tr-TR');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-time">[${timeStr}]</span>
+                <span class="log-level ${level}">${level.toUpperCase()}</span>
+                <span>${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Logları temizle
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            addLog('Loglar temizlendi', 'warning');
+        }
+
+        // Logları dışa aktar
+        function exportLogs() {
+            const logs = document.getElementById('logContainer').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kick-bot-logs-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            
+            addLog('Loglar dışa aktarıldı', 'success');
+        }
+
+        // Sayfa yüklendiğinde
+        window.onload = function() {
+            // Örnek veriler ekle
+            addLog('Bot paneline hoş geldiniz!', 'success');
+            addLog('Kick.com botu hazır', 'info');
+            
+            // Örnek otomatik mesajlar
+            const autoList = document.getElementById('autoMessageList');
+            autoList.innerHTML = `
+                <div class="auto-message-item">
+                    <span>📢 Kanalı takip etmeyi unutmayın! <span style="color: #666;">(her 300s)</span></span>
+                    <button class="btn btn-danger" style="padding: 5px 10px;" onclick="this.parentElement.remove()">Sil</button>
+                </div>
+                <div class="auto-message-item">
+                    <span>🎁 Çekiliş için !katıl yazın <span style="color: #666;">(her 600s)</span></span>
+                    <button class="btn btn-danger" style="padding: 5px 10px;" onclick="this.parentElement.remove()">Sil</button>
+                </div>
+            `;
+            
+            // Örnek komutlar
+            const cmdList = document.getElementById('commandsList');
+            cmdList.innerHTML = `
+                <div class="command-item">
+                    <div class="command-info">
+                        <span class="command-name">!merhaba</span>
+                        <span>Merhaba! Sohbete hoş geldin!</span>
+                        <span class="command-permission">Herkes</span>
+                    </div>
+                    <button class="delete-btn" onclick="this.parentElement.remove()">Sil</button>
+                </div>
+                <div class="command-item">
+                    <div class="command-info">
+                        <span class="command-name">!sosyal</span>
+                        <span>Instagram: @example, Twitter: @example</span>
+                        <span class="command-permission">Herkes</span>
+                    </div>
+                    <button class="delete-btn" onclick="this.parentElement.remove()">Sil</button>
+                </div>
+                <div class="command-item">
+                    <div class="command-info">
+                        <span class="command-name">!yağmur</span>
+                        <span>Yağmur komutu sadece VIP'ler için!</span>
+                        <span class="command-permission">VIP</span>
+                    </div>
+                    <button class="delete-btn" onclick="this.parentElement.remove()">Sil</button>
+                </div>
+            `;
+            
+            // Kayıtlı ayarları yükle
+            const savedSettings = localStorage.getItem('kickBotSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                document.getElementById('kickUsername').value = settings.username || '';
+                document.getElementById('targetChannel').value = settings.channel || '';
+                document.getElementById('botPrefix').value = settings.prefix || '!';
+                document.getElementById('autoRespond').checked = settings.autoRespond || false;
+                document.getElementById('messageLogs').checked = settings.messageLogs || false;
+            }
+            
+            // Örnek istatistik güncelleme
+            setInterval(() => {
+                if (document.getElementById('botStatus').classList.contains('active')) {
+                    const viewers = Math.floor(Math.random() * 200) + 50;
+                    const messages = Math.floor(Math.random() * 100) + 1000;
+                    document.getElementById('viewerCount').textContent = viewers;
+                    document.getElementById('messageCount').textContent = messages;
+                }
+            }, 5000);
+        };
+    </script>
+</body>
+</html>
