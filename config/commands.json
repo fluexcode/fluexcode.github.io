@@ -1,0 +1,101 @@
+{
+  "komutlar": [
+    {
+      "ad": "merhaba",
+      "yanit": "Merhaba @{user}! 👋 Sohbete hoş geldin!",
+      "yetki": "herkes",
+      "bekleme": 3,
+      "aktif": true
+    },
+    {
+      "ad": "saat",
+      "yanit": "@{user} 🕐 Saat: {saat}",
+      "yetki": "herkes",
+      "bekleme": 2,
+      "aktif": true
+    },
+    {
+      "ad": "tarih",
+      "yanit": "@{user} 📅 Tarih: {tarih}",
+      "yetki": "herkes",
+      "bekleme": 2,
+      "aktif": true
+    },
+    {
+      "ad": "sosyal",
+      "yanit": "@{user} 📱 Instagram: @example, Twitter: @example, Discord: discord.gg/example",
+      "yetki": "herkes",
+      "bekleme": 5,
+      "aktif": true
+    },
+    {
+      "ad": "discord",
+      "yanit": "@{user} 💬 Discord sunucumuz: https://discord.gg/example",
+      "yetki": "herkes",
+      "bekleme": 5,
+      "aktif": true
+    },
+    {
+      "ad": "komutlar",
+      "yanit": "@{user} 📋 Kullanılabilir komutlar: {komut_listesi}",
+      "yetki": "herkes",
+      "bekleme": 3,
+      "aktif": true
+    },
+    {
+      "ad": "istatistik",
+      "yanit": "@{user} 📊 Bot istatistikleri: {mesaj_sayisi} mesaj, {calisma_suresi} saattir aktif",
+      "yetki": "herkes",
+      "bekleme": 5,
+      "aktif": true
+    },
+    {
+      "ad": "takipci",
+      "yanit": "@{user} 👥 Kanalın {takipci_sayisi} takipçisi var!",
+      "yetki": "herkes",
+      "bekleme": 5,
+      "aktif": true
+    }
+  ],
+  
+  "yasakli_kelimeler": [
+    "reklam",
+    "spam",
+    "kufur",
+    "link"
+  ],
+  
+  "otomatik_mesajlar": [
+    {
+      "mesaj": "📢 Kanalı takip etmeyi unutmayın!",
+      "aralik": 300
+    },
+    {
+      "mesaj": "🎁 Çekiliş için !katıl yazabilirsiniz!",
+      "aralik": 600
+    },
+    {
+      "mesaj": "💬 Sohbet çok güzel, devam edin!",
+      "aralik": 450
+    }
+  ],
+  
+  "moderasyon": {
+    "kufur_engel": true,
+    "reklam_engel": true,
+    "buyuk_harf_engel": false,
+    "spam_engel": true,
+    "link_engel": true,
+    "caps_limit": 10,
+    "spam_limit": 3,
+    "spam_zaman": 5
+  },
+  
+  "ayarlar": {
+    "prefix": "!",
+    "otomatik_yanit": true,
+    "log_tut": true,
+    "dil": "tr",
+    "zaman_dilimi": "Europe/Istanbul"
+  }
+}
