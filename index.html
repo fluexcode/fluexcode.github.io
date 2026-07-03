@@ -154,8 +154,9 @@
         let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
         let SV_LINK = 'https://lirin.to/register?ref=david';
 
-        // Güvenlik Kilidi: Mod değilse true olacak ve komutları durduracak
         let botKilitli = false; 
+        let ws;
+        let reconnectTimeout;
 
         const chatLog = document.getElementById('chatLog');
         const terminalLog = document.getElementById('terminalLog');
@@ -174,9 +175,10 @@
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        let ws;
         function baglan() {
-            botKilitli = false; // Her yeni bağlantıda kilidi sıfırla
+            botKilitli = false; 
+            clearTimeout(reconnectTimeout); 
+            
             terminalYaz(`#${KANAL_ADI} kanalı için yeni bağlantı kuruluyor...`, "system-info");
             currentChannelDisplay.innerText = KANAL_ADI;
 
@@ -185,7 +187,6 @@
             ws.onopen = function() {
                 ws.send(`PASS ${OAUTH_KEY}`);
                 ws.send(`NICK ${BOT_ADI}`);
-                // Twitch'ten ekstra üyelik ve yetki etiketlerini (tags) talep et
                 ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
                 ws.send(`JOIN #${KANAL_ADI}`);
             };
@@ -193,7 +194,8 @@
             ws.onmessage = function(event) {
                 const data = event.data;
 
-                if (data.startsWith('PING')) {
+                // Twitch PING kontrolü (İçeriyorsa direkt PONG dön)
+                if (data.includes('PING')) {
                     ws.send('PONG :tmi.twitch.tv');
                     return;
                 }
@@ -207,22 +209,23 @@
                     terminalYaz(`${KANAL_ADI} kanal odasına bağlandı. Yetkiler sorgulanıyor...`, "term-line");
                 }
 
-                // MODERATÖR YETKİ KONTROLÜ (USERSTATE sinyali ile yakalanır)
+                // Moderatör yetki doğrulama ve kilitleme kontrolü
                 if (data.includes('USERSTATE') && data.includes(`#${KANAL_ADI}`)) {
-                    // Eğer gelen veri içinde "mod=1" ibaresi yoksa VE bot kanalın sahibi (broadcaster) değilse
                     const isMod = data.includes('mod=1');
                     const isBroadcaster = data.includes('badges=broadcaster/1');
 
                     if (!isMod && !isBroadcaster) {
-                        botKilitli = true; // Komut motorunu kilitle
-                        terminalYaz("KRİTİK UYARI: Bot bu kanalda moderatör yetkisine sahip değil!", "system-error");
-                        
-                        const kilitMesaji = "⚠️ Bu kanalda Moderatör yetkim yok! Yetki verilene kadar komutlar kapatılmıştır.";
-                        ws.send(`PRIVMSG #${KANAL_ADI} :${kilitMesaji}`);
-                        chatYaz(BOT_ADI, kilitMesaji, true);
+                        if (!botKilitli) {
+                            botKilitli = true; 
+                            terminalYaz("KRİTİK UYARI: Bot bu kanalda moderatör yetkisine sahip değil!", "system-error");
+                            const kilitMesaji = "⚠️ Bu kanalda Moderatör yetkim yok! Yetki verilene kadar komutlar kapatılmıştır.";
+                            ws.send(`PRIVMSG #${KANAL_ADI} :${kilitMesaji}`);
+                            chatYaz(BOT_ADI, kilitMesaji, true);
+                        }
                         return;
                     } else {
-                        terminalYaz("Moderatör yetkisi doğrulandı. Bot aktif!", "system-success");
+                        if(botKilitli) terminalYaz("Moderatör yetkisi doğrulandı. Bot aktif!", "system-success");
+                        botKilitli = false;
                     }
                 }
 
@@ -233,13 +236,8 @@
                     const isSelf = (kullanici.toLowerCase() === BOT_ADI.toLowerCase());
 
                     chatYaz(kullanici, mesaj, isSelf);
-
                     if (isSelf) return;
-
-                    // EĞER BOT KİLİTLENDİYSE HİÇBİR KOMUTU ÇALIŞTIRMA
-                    if (botKilitli) {
-                        return; 
-                    }
+                    if (botKilitli) return; 
 
                     const msgLower = mesaj.toLowerCase();
 
@@ -271,11 +269,16 @@
             };
 
             ws.onerror = function(err) {
-                terminalYaz("WebSocket Hatası!", "system-error");
+                terminalYaz("WebSocket Hatası oluştu!", "system-error");
             };
 
+            // Bağlantı kapanırsa 3 saniye sonra otomatik geri bağlanma motoru
             ws.onclose = function() {
-                terminalYaz("Eski bağlantı kapatıldı.", "term-line");
+                terminalYaz("Bağlantı koptu. 3 saniye içinde yeniden bağlanılıyor...", "system-error");
+                clearTimeout(reconnectTimeout);
+                reconnectTimeout = setTimeout(function() {
+                    baglan();
+                }, 3000); 
             };
         }
 
@@ -288,6 +291,7 @@
             SV_LINK = document.getElementById('svLinkInput').value.trim();
 
             if (ws) {
+                ws.onclose = function () {}; // Geçici olarak sıfırla ki çift bağlantı açmasın
                 ws.close(); 
             }
             
