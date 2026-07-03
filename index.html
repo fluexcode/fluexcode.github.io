@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twitch Bot & Chat Monitörü</title>
+    <title>Twitch Bot Yönetim Paneli</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -16,59 +16,87 @@
             height: 100vh;
             box-sizing: border-box;
         }
-        header {
-            margin-bottom: 15px;
-        }
-        h2 { margin: 0; color: #9146ff; }
-        .info { color: #adadb8; font-size: 13px; margin: 5px 0 0 0; }
         
-        /* İki sütunlu panel yapısı */
-        .container {
-            display: flex;
-            gap: 20px;
-            flex: 1;
-            min-height: 0; /* Taşmayı önlemek için */
-        }
-        
-        .panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #18181b;
+        /* Gelişmiş Ayar Yönetim Alanı */
+        .admin-settings {
+            background: #1f1f23;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid #2f2f35;
-            padding: 15px;
+            margin-bottom: 15px;
         }
-        
-        .panel-title {
+        .admin-title {
             font-weight: bold;
+            color: #9146ff;
+            margin-bottom: 12px;
             font-size: 16px;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #2f2f35;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .input-group label {
+            font-size: 12px;
+            color: #adadb8;
+            font-weight: bold;
+        }
+        .input-group input {
+            background: #0e0e10;
+            border: 1px solid #464649;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .input-group input:focus {
+            border-color: #9146ff;
+            outline: none;
         }
         
-        /* Akış Alanları */
-        .log-area { 
-            flex: 1;
-            overflow-y: auto; 
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-            padding: 10px;
-            background: #0f0f11;
+        /* Efektli Kaydet Butonu */
+        .save-btn {
+            background: #9146ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
             border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .save-btn:hover {
+            background: #772ce8;
+            box-shadow: 0 6px 12px rgba(145, 70, 255, 0.3);
+        }
+        .save-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        /* Renklendirmeler */
+        .container { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        .panel { flex: 1; display: flex; flex-direction: column; background: #18181b; border-radius: 8px; border: 1px solid #2f2f35; padding: 15px; }
+        .panel-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #2f2f35; }
+        .log-area { flex: 1; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 13px; padding: 10px; background: #0f0f11; border-radius: 4px; }
+        
         .chat-title { color: #efeff1; }
         .terminal-title { color: #00f5d4; }
-        
-        /* Chat Mesaj Stilleri */
-        .chat-msg { margin: 4px 0; line-height: 1.4; }
+        .chat-msg { margin: 6px 0; line-height: 1.4; }
         .user-name { font-weight: bold; color: #a970ff; }
         .bot-badge { background: #9146ff; color: white; padding: 1px 4px; border-radius: 3px; font-size: 10px; margin-right: 5px; }
-
-        /* Terminal Mesaj Stilleri */
+        
         .term-line { margin: 2px 0; color: #adadb8; }
         .system-success { color: #00ff7f; font-weight: bold; }
         .system-error { color: #ff4a4a; font-weight: bold; }
@@ -78,111 +106,195 @@
 </head>
 <body>
 
-    <header>
-        <h2>Twitch Bot Kontrol Paneli</h2>
-        <p class="info">Kanal: <strong>davidkaan05</strong> | Bot Hesabı: <strong>fluexcode</strong></p>
-    </header>
+    <div class="admin-settings">
+        <div class="admin-title">
+            <span>⚙️ Bot Kontrol & Link Yönetimi</span>
+            <span style="font-size: 13px; color: #adadb8;">Aktif Kanal: <strong id="currentChannelDisplay" style="color:#00f5d4;">davidkaan05</strong></span>
+        </div>
+        
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="targetChannelInput">HEDEF TWITCH KANALI</label>
+                <input type="text" id="targetChannelInput" value="davidkaan05">
+            </div>
+            <div class="input-group">
+                <label for="dcLinkInput">!dc (DISCORD) LİNKİ</label>
+                <input type="text" id="dcLinkInput" value="https://discord.gg/h2As7yGG8b">
+            </div>
+            <div class="input-group">
+                <label for="ytLinkInput">!yt (YOUTUBE) LİNKİ</label>
+                <input type="text" id="ytLinkInput" value="https://www.youtube.com/@davidkaan2246">
+            </div>
+            <div class="input-group">
+                <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
+                <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
+            </div>
+        </div>
+        
+        <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
+    </div>
 
     <div class="container">
         <div class="panel">
             <div class="panel-title chat-title">💬 Canlı Twitch Chat</div>
             <div id="chatLog" class="log-area"></div>
         </div>
-
         <div class="panel">
             <div class="panel-title terminal-title">💻 Geliştirici Terminali (Hata/Durum)</div>
             <div id="terminalLog" class="log-area"></div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tmi.js@1.8.5/1.8.5/tmi.min.js"></script>
-
     <script>
-        // ==================== AYARLARIMIZ ====================
-        const KANAL_ADI = 'davidkaan05'; 
         const BOT_ADI   = 'fluexcode';    
-        const OAUTH_KEY = 'oauth:37v6cwyvg65tkjcl2ye1eju1bhbqxo'; 
-        // =====================================================
+        const OAUTH_KEY = 'oauth:3ivyx75i7rf2uxzfk8p8sydksnle7s'; 
+
+        let KANAL_ADI = 'davidkaan05';
+        let DC_LINK = 'https://discord.gg/h2As7yGG8b';
+        let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
+        let SV_LINK = 'https://lirin.to/register?ref=david';
+
+        // Güvenlik Kilidi: Mod değilse true olacak ve komutları durduracak
+        let botKilitli = false; 
 
         const chatLog = document.getElementById('chatLog');
         const terminalLog = document.getElementById('terminalLog');
+        const currentChannelDisplay = document.getElementById('currentChannelDisplay');
 
-        // Terminale teknik log yazma fonksiyonu
         function terminalYaz(mesaj, stil = 'term-line') {
             const zaman = new Date().toLocaleTimeString();
             terminalLog.innerHTML += `<div class="${stil}">[${zaman}] ${mesaj}</div>`;
             terminalLog.scrollTop = terminalLog.scrollHeight; 
         }
 
-        // Chati ekrana yazdırma fonksiyonu
         function chatYaz(kullanici, mesaj, isBot = false) {
             const zaman = new Date().toLocaleTimeString();
             const badge = isBot ? `<span class="bot-badge">BOT</span>` : '';
-            chatLog.innerHTML += `<div class="chat-msg"><span style="color:#777; font-size:11px;">${zaman}</span> ${badge}<span class="user-name">${kullanici}:</span> <span class="msg-text">${mesaj}</span></div>`;
+            chatLog.innerHTML += `<div class="chat-msg"><span style="color:#777; font-size:11px;">${zaman}</span> ${badge}<span class="user-name">${kullanici}:</span> <span>${mesaj}</span></div>`;
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        terminalYaz("Bot başlatılıyor, Twitch sunucularına istek gönderiliyor...", "system-info");
+        let ws;
+        function baglan() {
+            botKilitli = false; // Her yeni bağlantıda kilidi sıfırla
+            terminalYaz(`#${KANAL_ADI} kanalı için yeni bağlantı kuruluyor...`, "system-info");
+            currentChannelDisplay.innerText = KANAL_ADI;
 
-        // Twitch İstemci Yapılandırması (Debug modu detaylı inceleme için açıldı)
-        const client = new tmi.Client({
-            options: { debug: true }, 
-            identity: {
-                username: BOT_ADI,
-                password: OAUTH_KEY
-            },
-            channels: [KANAL_ADI]
-        });
+            ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
 
-        // Twitch'e Bağlanma Durumları
-        client.connect()
-            .then(() => {
-                terminalYaz(`${KANAL_ADI} kanalının chat odasına başarıyla bağlanıldı! Bot aktif.`, "system-success");
-            })
-            .catch(err => {
-                terminalYaz(`BAĞLANTI HATASI: ${err}. Lütfen Token şifrenizi kontrol edin!`, "system-error");
-                console.error(err);
-            });
+            ws.onopen = function() {
+                ws.send(`PASS ${OAUTH_KEY}`);
+                ws.send(`NICK ${BOT_ADI}`);
+                // Twitch'ten ekstra üyelik ve yetki etiketlerini (tags) talep et
+                ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+                ws.send(`JOIN #${KANAL_ADI}`);
+            };
 
-        // Bağlantı durumlarını terminalden izlemek için ek dinleyiciler
-        client.on('connecting', (address, port) => {
-            terminalYaz(`Bağlantı kuruluyor: ${address}:${port}`, "term-line");
-        });
+            ws.onmessage = function(event) {
+                const data = event.data;
 
-        client.on('disconnected', (reason) => {
-            terminalYaz(`Bağlantı kesildi! Sebep: ${reason}`, "system-error");
-        });
+                if (data.startsWith('PING')) {
+                    ws.send('PONG :tmi.twitch.tv');
+                    return;
+                }
 
-        // Chat Mesajlarını Dinleme
-        client.on('message', (channel, tags, message, self) => {
-            const kullaniciAdi = tags['display-name'] || tags['username'];
+                if (data.includes('Notice Authenticating failed')) {
+                    terminalYaz("BAĞLANTI HATASI: Giriş başarısız, Token geçersiz veya süresi dolmuş!", "system-error");
+                    return;
+                }
+
+                if (data.includes('Welcome, GLHF!')) {
+                    terminalYaz(`${KANAL_ADI} kanal odasına bağlandı. Yetkiler sorgulanıyor...`, "term-line");
+                }
+
+                // MODERATÖR YETKİ KONTROLÜ (USERSTATE sinyali ile yakalanır)
+                if (data.includes('USERSTATE') && data.includes(`#${KANAL_ADI}`)) {
+                    // Eğer gelen veri içinde "mod=1" ibaresi yoksa VE bot kanalın sahibi (broadcaster) değilse
+                    const isMod = data.includes('mod=1');
+                    const isBroadcaster = data.includes('badges=broadcaster/1');
+
+                    if (!isMod && !isBroadcaster) {
+                        botKilitli = true; // Komut motorunu kilitle
+                        terminalYaz("KRİTİK UYARI: Bot bu kanalda moderatör yetkisine sahip değil!", "system-error");
+                        
+                        const kilitMesaji = "⚠️ Bu kanalda Moderatör yetkim yok! Yetki verilene kadar komutlar kapatılmıştır.";
+                        ws.send(`PRIVMSG #${KANAL_ADI} :${kilitMesaji}`);
+                        chatYaz(BOT_ADI, kilitMesaji, true);
+                        return;
+                    } else {
+                        terminalYaz("Moderatör yetkisi doğrulandı. Bot aktif!", "system-success");
+                    }
+                }
+
+                const match = data.match(/:([^!]+)![^@]+@[^ ]+ PRIVMSG #[^ ]+ :(.*)/);
+                if (match) {
+                    const kullanici = match[1];
+                    const mesaj = match[2].trim();
+                    const isSelf = (kullanici.toLowerCase() === BOT_ADI.toLowerCase());
+
+                    chatYaz(kullanici, mesaj, isSelf);
+
+                    if (isSelf) return;
+
+                    // EĞER BOT KİLİTLENDİYSE HİÇBİR KOMUTU ÇALIŞTIRMA
+                    if (botKilitli) {
+                        return; 
+                    }
+
+                    const msgLower = mesaj.toLowerCase();
+
+                    if (msgLower === '!dc' || msgLower === '!discord') {
+                        terminalYaz(`Komut tetiklendi: !dc -> Gönderen: ${kullanici}`, "command-trigger");
+                        const cevap = `@${kullanici} Discord Sunucumuz: ${DC_LINK}`;
+                        ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                        chatYaz(BOT_ADI, cevap, true);
+                    } 
+                    else if (msgLower === '!sv' || msgLower === '!server') {
+                        terminalYaz(`Komut tetiklendi: !sv -> Gönderen: ${kullanici}`, "command-trigger");
+                        const cevap = `@${kullanici} Kayıt Linki: ${SV_LINK}`;
+                        ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                        chatYaz(BOT_ADI, cevap, true);
+                    } 
+                    else if (msgLower === '!yt' || msgLower === '!youtube') {
+                        terminalYaz(`Komut tetiklendi: !yt -> Gönderen: ${kullanici}`, "command-trigger");
+                        const cevap = `@${kullanici} YouTube Kanalımız: ${YT_LINK}`;
+                        ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                        chatYaz(BOT_ADI, cevap, true);
+                    }
+                    else if (msgLower === '!yardım' || msgLower === '!yardim' || msgLower === '!komutlar') {
+                        terminalYaz(`Komut tetiklendi: !yardım -> Gönderen: ${kullanici}`, "command-trigger");
+                        const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv`;
+                        ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                        chatYaz(BOT_ADI, cevap, true);
+                    }
+                }
+            };
+
+            ws.onerror = function(err) {
+                terminalYaz("WebSocket Hatası!", "system-error");
+            };
+
+            ws.onclose = function() {
+                terminalYaz("Eski bağlantı kapatıldı.", "term-line");
+            };
+        }
+
+        function ayarlariKaydet() {
+            terminalYaz("Ayarlar güncelleniyor, bot yeniden başlatılıyor...", "system-info");
             
-            // Canlı chat paneline gelen her mesajı yazdır
-            chatYaz(kullaniciAdi, message, self);
+            KANAL_ADI = document.getElementById('targetChannelInput').value.trim().toLowerCase();
+            DC_LINK = document.getElementById('dcLinkInput').value.trim();
+            YT_LINK = document.getElementById('ytLinkInput').value.trim();
+            SV_LINK = document.getElementById('svLinkInput').value.trim();
 
-            // Bot kendi yazdığı mesaja cevap vermesin (Sonsuz döngü engeli)
-            if (self) return; 
-
-            const msg = message.trim().toLowerCase();
-
-            // KOMUT: !yt
-            if (msg === '!yt' || msg === '!youtube') {
-                terminalYaz(`Komut yakalandı: !yt -> Gönderen: ${kullaniciAdi}`, "command-trigger");
-                
-                client.say(channel, `@${kullaniciAdi} YouTube Kanalımız: youtube.com/davidkaan05`)
-                    .then(() => terminalYaz(`[Cevap Gönderildi] !yt komutuna yanıt chate yazıldı.`, "system-info"))
-                    .catch(err => terminalYaz(`Mesaj gönderme hatası: ${err}`, "system-error"));
+            if (ws) {
+                ws.close(); 
             }
             
-            // KOMUT: !dc
-            else if (msg === '!dc' || msg === '!discord') {
-                terminalYaz(`Komut yakalandı: !dc -> Gönderen: ${kullaniciAdi}`, "command-trigger");
-                
-                client.say(channel, `@${kullaniciAdi} Discord Sunucumuz: discord.gg/davidkaan05`)
-                    .then(() => terminalYaz(`[Cevap Gönderildi] !dc komutuna yanıt chate yazıldı.`, "system-info"))
-                    .catch(err => terminalYaz(`Mesaj gönderme hatası: ${err}`, "system-error"));
-            }
-        });
+            baglan();
+        }
+
+        baglan();
     </script>
 </body>
 </html>
