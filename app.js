@@ -48,16 +48,52 @@ function tabloyuDoldur() {
     });
 }
 
+// Eski mesajları temizleyerek DOM'un büyüyüp yavaşlamasını engeller
+const MAKS_MESAJ = 200;
+
 function terminalYaz(mesaj, stil = 'term-line') {
     const zaman = new Date().toLocaleTimeString();
-    terminalLog.innerHTML += `<div class="${stil}">[${zaman}] ${mesaj}</div>`;
+    const div = document.createElement('div');
+    div.className = stil;
+    div.textContent = `[${zaman}] ${mesaj}`;
+    terminalLog.appendChild(div);
+    while (terminalLog.children.length > MAKS_MESAJ) {
+        terminalLog.removeChild(terminalLog.firstChild);
+    }
     terminalLog.scrollTop = terminalLog.scrollHeight; 
 }
 
 function chatYaz(kullanici, mesaj, isBot = false) {
     const zaman = new Date().toLocaleTimeString();
-    const badge = isBot ? `<span class="bot-badge">BOT</span>` : '';
-    chatLog.innerHTML += `<div class="chat-msg"><span style="color:#777; font-size:11px;">${zaman}</span> ${badge}<span class="user-name">${kullanici}:</span> <span>${mesaj}</span></div>`;
+    const div = document.createElement('div');
+    div.className = 'chat-msg';
+    
+    const spanZaman = document.createElement('span');
+    spanZaman.style.color = '#777';
+    spanZaman.style.fontSize = '11px';
+    spanZaman.textContent = zaman + ' ';
+    div.appendChild(spanZaman);
+
+    if (isBot) {
+        const badge = document.createElement('span');
+        badge.className = 'bot-badge';
+        badge.textContent = 'BOT';
+        div.appendChild(badge);
+    }
+
+    const spanUser = document.createElement('span');
+    spanUser.className = 'user-name';
+    spanUser.textContent = kullanici + ': ';
+    div.appendChild(spanUser);
+
+    const spanMsg = document.createElement('span');
+    spanMsg.textContent = mesaj;
+    div.appendChild(spanMsg);
+
+    chatLog.appendChild(div);
+    while (chatLog.children.length > MAKS_MESAJ) {
+        chatLog.removeChild(chatLog.firstChild);
+    }
     chatLog.scrollTop = chatLog.scrollHeight;
 }
 
