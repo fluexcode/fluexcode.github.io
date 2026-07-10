@@ -36,7 +36,7 @@
         }
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 12px;
             margin-bottom: 12px;
         }
@@ -129,6 +129,14 @@
                 <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
                 <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
             </div>
+            <div class="input-group">
+                <label for="minSansInput">MİN ŞANS DEĞERİ</label>
+                <input type="number" id="minSansInput" value="1">
+            </div>
+            <div class="input-group">
+                <label for="maxSansInput">MAX ŞANS DEĞERİ</label>
+                <input type="number" id="maxSansInput" value="100">
+            </div>
         </div>
         
         <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
@@ -153,6 +161,10 @@
         let DC_LINK = 'https://discord.gg/h2As7yGG8b';
         let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
         let SV_LINK = 'https://lirin.to/register?ref=david';
+        
+        // Şans komutu için varsayılan global değişkenler
+        let MIN_SANS = 1;
+        let MAX_SANS = 100;
 
         let botKilitli = false; 
         let ws;
@@ -194,7 +206,6 @@
             ws.onmessage = function(event) {
                 const data = event.data;
 
-                // Twitch PING kontrolü (İçeriyorsa direkt PONG dön)
                 if (data.includes('PING')) {
                     ws.send('PONG :tmi.twitch.tv');
                     return;
@@ -209,7 +220,6 @@
                     terminalYaz(`${KANAL_ADI} kanal odasına bağlandı. Yetkiler sorgulanıyor...`, "term-line");
                 }
 
-                // Moderatör yetki doğrulama ve kilitleme kontrolü
                 if (data.includes('USERSTATE') && data.includes(`#${KANAL_ADI}`)) {
                     const isMod = data.includes('mod=1');
                     const isBroadcaster = data.includes('badges=broadcaster/1');
@@ -259,9 +269,20 @@
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     }
+                    /* Yeni !şans / !sans Komut Alanı */
+                    else if (msgLower === '!şans' || msgLower === '!sans') {
+                        terminalYaz(`Komut tetiklendi: !şans -> Gönderen: ${kullanici}`, "command-trigger");
+                        
+                        // Belirlenen min ve max değerleri arasında rastgele tam sayı üretir
+                        const rastgeleSans = Math.floor(Math.random() * (MAX_SANS - MIN_SANS + 1)) + MIN_SANS;
+                        const cevap = `@${kullanici} Şansın: %${rastgeleSans} 🍀 (Aralık: ${MIN_SANS}-${MAX_SANS})`;
+                        
+                        ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                        chatYaz(BOT_ADI, cevap, true);
+                    }
                     else if (msgLower === '!yardım' || msgLower === '!yardim' || msgLower === '!komutlar') {
                         terminalYaz(`Komut tetiklendi: !yardım -> Gönderen: ${kullanici}`, "command-trigger");
-                        const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv`;
+                        const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !şans`;
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     }
@@ -272,7 +293,6 @@
                 terminalYaz("WebSocket Hatası oluştu!", "system-error");
             };
 
-            // Bağlantı kapanırsa 3 saniye sonra otomatik geri bağlanma motoru
             ws.onclose = function() {
                 terminalYaz("Bağlantı koptu. 3 saniye içinde yeniden bağlanılıyor...", "system-error");
                 clearTimeout(reconnectTimeout);
@@ -289,9 +309,13 @@
             DC_LINK = document.getElementById('dcLinkInput').value.trim();
             YT_LINK = document.getElementById('ytLinkInput').value.trim();
             SV_LINK = document.getElementById('svLinkInput').value.trim();
+            
+            // Panelden girilen şans sınır değerlerini al ve sayıya çevir
+            MIN_SANS = parseInt(document.getElementById('minSansInput').value) || 1;
+            MAX_SANS = parseInt(document.getElementById('maxSansInput').value) || 100;
 
             if (ws) {
-                ws.onclose = function () {}; // Geçici olarak sıfırla ki çift bağlantı açmasın
+                ws.onclose = function () {}; 
                 ws.close(); 
             }
             
