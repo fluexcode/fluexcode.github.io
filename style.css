@@ -1,0 +1,315 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:
+        radial-gradient(ellipse at top left, rgba(145, 70, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(0, 245, 212, 0.08) 0%, transparent 50%),
+        #0a0a0f;
+    color: #efeff1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/* ===== Modern Kaydırma Çubuğu ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #9146ff, #772ce8); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #a35cff, #9146ff); }
+
+/* ===== Admin Ayarları Paneli ===== */
+.admin-settings {
+    background: rgba(28, 28, 38, 0.85);
+    backdrop-filter: blur(12px);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid rgba(145, 70, 255, 0.2);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.admin-title {
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    font-size: 17px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(145, 70, 255, 0.15);
+}
+
+/* ===== Input Grid ===== */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 11px;
+    color: #adadb8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.input-group input {
+    background: rgba(10, 10, 15, 0.6);
+    border: 1px solid #2a2a3a;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: all 0.25s ease;
+}
+
+.input-group input:focus {
+    border-color: #9146ff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(145, 70, 255, 0.15);
+    background: rgba(10, 10, 15, 0.9);
+}
+
+/* ===== İhtimal / Şans Bölümü ===== */
+.probability-section {
+    background: rgba(16, 16, 22, 0.6);
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #2a2a3a;
+    margin-bottom: 20px;
+}
+
+.prob-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #00f5d4;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.prob-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+    background: rgba(10, 10, 15, 0.5);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    flex-wrap: wrap;
+}
+
+.prob-row:hover {
+    border-color: rgba(145, 70, 255, 0.3);
+    background: rgba(10, 10, 15, 0.8);
+}
+
+.prob-row label {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.prob-row span {
+    color: #666;
+    font-weight: bold;
+}
+
+.prob-row input {
+    background: rgba(10, 10, 15, 0.8);
+    border: 1px solid #33334a;
+    color: white;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    width: 70px;
+    transition: all 0.25s ease;
+}
+
+.prob-row input.wide { width: 110px; }
+
+.prob-row input:focus {
+    border-color: #9146ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(145, 70, 255, 0.15);
+}
+
+.prob-row button {
+    background: rgba(235, 4, 0, 0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(235, 4, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.prob-row button:hover {
+    background: #eb0400;
+    color: white;
+    border-color: #eb0400;
+}
+
+.add-row-btn {
+    background: linear-gradient(135deg, #00b589, #008f6b);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 181, 137, 0.3);
+}
+
+.add-row-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 181, 137, 0.5);
+}
+
+/* ===== Kaydet Butonu ===== */
+.save-btn {
+    background: linear-gradient(135deg, #9146ff, #772ce8);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    width: 100%;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 16px rgba(145, 70, 255, 0.35);
+    letter-spacing: 0.5px;
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #a35cff, #9146ff);
+    box-shadow: 0 6px 24px rgba(145, 70, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.save-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(145, 70, 255, 0.3);
+}
+
+/* ===== Chat & Terminal Panelleri ===== */
+.container {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(24, 24, 32, 0.7);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid #2a2a3a;
+    padding: 18px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.panel-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(145, 70, 255, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.log-area {
+    flex: 1;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Courier New', Courier, monospace;
+    font-size: 13px;
+    padding: 14px;
+    background: rgba(8, 8, 12, 0.8);
+    border-radius: 10px;
+    border: 1px solid rgba(42, 42, 58, 0.5);
+    line-height: 1.6;
+}
+
+/* ===== Renk Stilleri ===== */
+.chat-title { color: #fff; }
+.terminal-title { color: #00f5d4; }
+
+.chat-msg {
+    margin: 4px 0;
+    padding: 5px 8px;
+    border-radius: 6px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    transition: background 0.15s ease;
+}
+
+.chat-msg:hover {
+    background: rgba(145, 70, 255, 0.06);
+}
+
+.user-name {
+    font-weight: 700;
+    color: #a970ff;
+}
+
+.bot-badge {
+    background: linear-gradient(135deg, #9146ff, #772ce8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.term-line { margin: 3px 0; color: #adadb8; }
+.system-success { color: #00ff88; font-weight: 600; }
+.system-error { color: #ff5c5c; font-weight: 600; }
+.system-info { color: #38b6ff; }
+.command-trigger { color: #ffb800; font-weight: 600; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .container { flex-direction: column; }
+    body { padding: 12px; height: auto; overflow-y: auto; }
+}
