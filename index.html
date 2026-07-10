@@ -17,7 +17,6 @@
             box-sizing: border-box;
         }
         
-        /* Gelişmiş Ayar Yönetim Alanı */
         .admin-settings {
             background: #1f1f23;
             padding: 15px;
@@ -36,9 +35,9 @@
         }
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
         .input-group {
             display: flex;
@@ -58,12 +57,61 @@
             border-radius: 4px;
             font-size: 13px;
         }
-        .input-group input:focus {
-            border-color: #9146ff;
-            outline: none;
+        .input-group input:focus { border-color: #9146ff; outline: none; }
+
+        /* Gelişmiş Şans Aralıkları Tablo Alanı */
+        .probability-section {
+            background: #18181b;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #2f2f35;
+            margin-bottom: 15px;
+        }
+        .prob-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #00f5d4;
+        }
+        .prob-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .prob-row input {
+            background: #0e0e10;
+            border: 1px solid #464649;
+            color: white;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 80px;
+        }
+        .prob-row input.wide { width: 120px; }
+        .prob-row button {
+            background: #eb0400;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .add-row-btn {
+            background: #00b589;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
         }
         
-        /* Efektli Kaydet Butonu */
         .save-btn {
             background: #9146ff;
             color: white;
@@ -77,14 +125,8 @@
             transition: all 0.2s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
-        .save-btn:hover {
-            background: #772ce8;
-            box-shadow: 0 6px 12px rgba(145, 70, 255, 0.3);
-        }
-        .save-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
+        .save-btn:hover { background: #772ce8; box-shadow: 0 6px 12px rgba(145, 70, 255, 0.3); }
+        .save-btn:active { transform: scale(0.97); }
 
         .container { display: flex; gap: 20px; flex: 1; min-height: 0; }
         .panel { flex: 1; display: flex; flex-direction: column; background: #18181b; border-radius: 8px; border: 1px solid #2f2f35; padding: 15px; }
@@ -108,7 +150,7 @@
 
     <div class="admin-settings">
         <div class="admin-title">
-            <span>⚙️ Bot Kontrol & Link Yönetimi</span>
+            <span>⚙️ Bot Kontrol & Gelişmiş Şans Yönetimi</span>
             <span style="font-size: 13px; color: #adadb8;">Aktif Kanal: <strong id="currentChannelDisplay" style="color:#00f5d4;">davidkaan06</strong></span>
         </div>
         
@@ -129,14 +171,15 @@
                 <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
                 <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
             </div>
-            <div class="input-group">
-                <label for="minSansInput">MİN ŞANS DEĞERİ</label>
-                <input type="number" id="minSansInput" value="1">
+        </div>
+
+        <div class="probability-section">
+            <div class="prob-header">
+                <span>📊 !şans Komutu İhtimal Tablosu (Toplam Oran Önemli Değildir, Ağırlıklıdır)</span>
+                <button type="button" class="add-row-btn" onclick="aralikEkle(1, 5, 1, 'Nadir')">+ Yeni Aralık Ekle</button>
             </div>
-            <div class="input-group">
-                <label for="maxSansInput">MAX ŞANS DEĞERİ</label>
-                <input type="number" id="maxSansInput" value="100">
-            </div>
+            <div id="probRowsContainer">
+                </div>
         </div>
         
         <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
@@ -162,9 +205,13 @@
         let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
         let SV_LINK = 'https://lirin.to/register?ref=david';
         
-        // Şans komutu için varsayılan global değişkenler
-        let MIN_SANS = 1;
-        let MAX_SANS = 100;
+        // Gelişmiş şans havuzu listesi
+        let SANS_HAVUZU = [
+            { min: 1, max: 5, ihtimal: 1, etiket: 'Efsanevi' },
+            { min: 6, max: 14, ihtimal: 5, etiket: 'Destansı' },
+            { min: 15, max: 26, ihtimal: 10, etiket: 'Nadir' },
+            { min: 27, max: 100, ihtimal: 84, etiket: 'Sıradan' }
+        ];
 
         let botKilitli = false; 
         let ws;
@@ -173,6 +220,32 @@
         const chatLog = document.getElementById('chatLog');
         const terminalLog = document.getElementById('terminalLog');
         const currentChannelDisplay = document.getElementById('currentChannelDisplay');
+
+        // Panel arayüzüne yeni satır ekleyen fonksiyon
+        function aralikEkle(min = 0, max = 100, ihtimal = 10, etiket = 'Grup') {
+            const container = document.getElementById('probRowsContainer');
+            const row = document.createElement('div');
+            row.className = 'prob-row';
+            row.innerHTML = `
+                <input type="text" class="wide etiket-input" placeholder="Grup Adı" value="${etiket}">
+                <label style="font-size:11px;">Sayılar:</label>
+                <input type="number" class="min-input" placeholder="Min" value="${min}">
+                <span>-</span>
+                <input type="number" class="max-input" placeholder="Max" value="${max}">
+                <label style="font-size:11px; margin-left:10px;">Çıkma Ağırlığı:</label>
+                <input type="number" class="ihtimal-input" placeholder="Şans" value="${ihtimal}">
+                <button onclick="this.parentElement.remove()">❌ Sil</button>
+            `;
+            container.appendChild(row);
+        }
+
+        // Başlangıçta varsayılan listeyi ekrana çiz
+        function tabloyuDoldur() {
+            document.getElementById('probRowsContainer').innerHTML = '';
+            SANS_HAVUZU.forEach(item => {
+                aralikEkle(item.min, item.max, item.ihtimal, item.etiket);
+            });
+        }
 
         function terminalYaz(mesaj, stil = 'term-line') {
             const zaman = new Date().toLocaleTimeString();
@@ -252,36 +325,58 @@
                     const msgLower = mesaj.toLowerCase();
 
                     if (msgLower === '!dc' || msgLower === '!discord') {
-                        terminalYaz(`Komut tetiklendi: !dc -> Gönderen: ${kullanici}`, "command-trigger");
                         const cevap = `@${kullanici} Discord Sunucumuz: ${DC_LINK}`;
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     } 
                     else if (msgLower === '!sv' || msgLower === '!server') {
-                        terminalYaz(`Komut tetiklendi: !sv -> Gönderen: ${kullanici}`, "command-trigger");
                         const cevap = `@${kullanici} Kayıt Linki: ${SV_LINK}`;
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     } 
                     else if (msgLower === '!yt' || msgLower === '!youtube') {
-                        terminalYaz(`Komut tetiklendi: !yt -> Gönderen: ${kullanici}`, "command-trigger");
                         const cevap = `@${kullanici} YouTube Kanalımız: ${YT_LINK}`;
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     }
-                    /* Yeni !şans / !sans Komut Alanı */
+                    /* GELİŞMİŞ ŞANS MOTORU ALANI */
                     else if (msgLower === '!şans' || msgLower === '!sans') {
                         terminalYaz(`Komut tetiklendi: !şans -> Gönderen: ${kullanici}`, "command-trigger");
                         
-                        // Belirlenen min ve max değerleri arasında rastgele tam sayı üretir
-                        const rastgeleSans = Math.floor(Math.random() * (MAX_SANS - MIN_SANS + 1)) + MIN_SANS;
-                        const cevap = `@${kullanici} Şansın: %${rastgeleSans} 🍀 (Aralık: ${MIN_SANS}-${MAX_SANS})`;
+                        if (SANS_HAVUZU.length === 0) {
+                            const cevap = `@${kullanici} Şans havuzu ayarlanmamış!`;
+                            ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                            return;
+                        }
+
+                        // Toplam ağırlığı (ihtimal havuzunu) hesapla
+                        let toplamAgirlik = 0;
+                        SANS_HAVUZU.forEach(h => toplamAgirlik += h.ihtimal);
+
+                        // Havuzdan ağırlıklı rastgele bir seçim yap
+                        let rastgeleZar = Math.random() * toplamAgirlik;
+                        let secilenAralik = null;
+
+                        for (let i = 0; i < SANS_HAVUZU.length; i++) {
+                            rastgeleZar -= SANS_HAVUZU[i].ihtimal;
+                            if (rastgeleZar <= 0) {
+                                secilenAralik = SANS_HAVUZU[i];
+                                break;
+                            }
+                        }
+
+                        if (!secilenAralik) secilenAralik = SANS_HAVUZU[SANS_HAVUZU.length - 1];
+
+                        // Seçilen aralığın içinden rastgele tam sayı üret
+                        const sonucSayi = Math.floor(Math.random() * (secilenAralik.max - secilenAralik.min + 1)) + secilenAralik.min;
+                        
+                        // Chate grubuyla beraber güzelce yazdır
+                        const cevap = `@${kullanici} Şansın: [${secilenAralik.etiket}] %${sonucSayi} 🍀`;
                         
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     }
                     else if (msgLower === '!yardım' || msgLower === '!yardim' || msgLower === '!komutlar') {
-                        terminalYaz(`Komut tetiklendi: !yardım -> Gönderen: ${kullanici}`, "command-trigger");
                         const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !şans`;
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
@@ -289,30 +384,36 @@
                 }
             };
 
-            ws.onerror = function(err) {
-                terminalYaz("WebSocket Hatası oluştu!", "system-error");
-            };
-
+            ws.onerror = function(err) { terminalYaz("WebSocket Hatası oluştu!", "system-error"); };
             ws.onclose = function() {
                 terminalYaz("Bağlantı koptu. 3 saniye içinde yeniden bağlanılıyor...", "system-error");
                 clearTimeout(reconnectTimeout);
-                reconnectTimeout = setTimeout(function() {
-                    baglan();
-                }, 3000); 
+                reconnectTimeout = setTimeout(function() { baglan(); }, 3000); 
             };
         }
 
         function ayarlariKaydet() {
-            terminalYaz("Ayarlar güncelleniyor, bot yeniden başlatılıyor...", "system-info");
+            terminalYaz("Ayarlar ve Şans Grupları güncelleniyor, bot yeniden başlatılıyor...", "system-info");
             
             KANAL_ADI = document.getElementById('targetChannelInput').value.trim().toLowerCase();
             DC_LINK = document.getElementById('dcLinkInput').value.trim();
             YT_LINK = document.getElementById('ytLinkInput').value.trim();
             SV_LINK = document.getElementById('svLinkInput').value.trim();
             
-            // Panelden girilen şans sınır değerlerini al ve sayıya çevir
-            MIN_SANS = parseInt(document.getElementById('minSansInput').value) || 1;
-            MAX_SANS = parseInt(document.getElementById('maxSansInput').value) || 100;
+            // Tablodaki dinamik verileri topla ve havuzu güncelle
+            const dinamikHavuz = [];
+            const rows = document.querySelectorAll('.prob-row');
+            
+            rows.forEach(row => {
+                const etiket = row.querySelector('.etiket-input').value.trim() || 'Grup';
+                const min = parseInt(row.querySelector('.min-input').value) || 0;
+                const max = parseInt(row.querySelector('.max-input').value) || 100;
+                const ihtimal = parseInt(row.querySelector('.ihtimal-input').value) || 1;
+                
+                dinamikHavuz.push({ min, max, ihtimal, etiket });
+            });
+
+            SANS_HAVUZU = dinamikHavuz;
 
             if (ws) {
                 ws.onclose = function () {}; 
@@ -322,6 +423,8 @@
             baglan();
         }
 
+        // Başlangıç tetiklemeleri
+        tabloyuDoldur();
         baglan();
     </script>
 </body>
