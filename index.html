@@ -175,11 +175,11 @@
 
         <div class="probability-section">
             <div class="prob-header">
-                <span>📊 !şans Komutu İhtimal Tablosu (Toplam Oran Önemli Değildir, Ağırlıklıdır)</span>
+                <span>📊 !kazan Komutu İhtimal Tablosu (Toplam Oran Önemli Değildir, Ağırlıklıdır)</span>
                 <button type="button" class="add-row-btn" onclick="aralikEkle(1, 5, 1, 'Nadir')">+ Yeni Aralık Ekle</button>
             </div>
             <div id="probRowsContainer">
-                </div>
+            </div>
         </div>
         
         <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
@@ -340,8 +340,8 @@
                         chatYaz(BOT_ADI, cevap, true);
                     }
                     /* GELİŞMİŞ ŞANS MOTORU ALANI */
-                    else if (msgLower === '!şans' || msgLower === '!sans') {
-                        terminalYaz(`Komut tetiklendi: !şans -> Gönderen: ${kullanici}`, "command-trigger");
+                    else if (msgLower === '!kazan') {
+                        terminalYaz(`Komut tetiklendi: !kazan -> Gönderen: ${kullanici}`, "command-trigger");
                         
                         if (SANS_HAVUZU.length === 0) {
                             const cevap = `@${kullanici} Şans havuzu ayarlanmamış!`;
@@ -370,14 +370,14 @@
                         // Seçilen aralığın içinden rastgele tam sayı üret
                         const sonucSayi = Math.floor(Math.random() * (secilenAralik.max - secilenAralik.min + 1)) + secilenAralik.min;
                         
-                        // Chate grubuyla beraber güzelce yazdır
-                        const cevap = `@${kullanici} Şansın: [${secilenAralik.etiket}] %${sonucSayi} 🍀`;
+                        // İstenen yeni format: @kullanici Sayı : [Grup] %oran
+                        const cevap = `@${kullanici} Sayı : [${secilenAralik.etiket}] %${sonucSayi}`;
                         
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     }
                     else if (msgLower === '!yardım' || msgLower === '!yardim' || msgLower === '!komutlar') {
-                        const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !şans`;
+                        const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !kazan`;
                         ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                         chatYaz(BOT_ADI, cevap, true);
                     }
