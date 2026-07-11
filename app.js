@@ -8,7 +8,7 @@ let SV_LINK = 'https://lirin.to/register?ref=david';
 
 // COOLDOWN AYARLARI (Saniye Cinsinden)
 const KULLANICI_COOLDOWN_SURESI = 30; // Bir kullanıcı !kazan yazdıktan sonra kaç saniye beklemeli?
-const GLOBAL_COOLDOWN_SURESI = 3;     // Komut genel olarak kaç saniyede bir tetiklenebilsin?
+const GLOBAL_COOLDOWN_SURESI = 1;     // Komut genel olarak kaç saniyede bir tetiklenebilsin?
 
 // Cooldown takip objeleri
 let sonKullanimKullanici = {}; // { 'kullanici_adi': timestamp }
