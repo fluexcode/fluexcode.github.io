@@ -1,10 +1,18 @@
-const BOT_ADI   = 'fluexcode';    
+const BOT_ADI   = 'fluexcode';  
 const OAUTH_KEY = 'oauth:3ivyx75i7rf2uxzfk8p8sydksnle7s'; 
 
 let KANAL_ADI = 'davidkaan06';
 let DC_LINK = 'https://discord.gg/h2As7yGG8b';
 let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
 let SV_LINK = 'https://lirin.to/register?ref=david';
+
+// COOLDOWN AYARLARI (Saniye Cinsinden)
+const KULLANICI_COOLDOWN_SURESI = 30; // Bir kullanıcı !kazan yazdıktan sonra kaç saniye beklemeli?
+const GLOBAL_COOLDOWN_SURESI = 1;     // Komut genel olarak kaç saniyede bir tetiklenebilsin?
+
+// Cooldown takip objeleri
+let sonKullanimKullanici = {}; // { 'kullanici_adi': timestamp }
+let sonKullanimGlobal = 0;     // timestamp
 
 // Gelişmiş şans havuzu listesi
 let SANS_HAVUZU = [
@@ -178,6 +186,31 @@ function baglan() {
             }
             /* GELİŞMİŞ ŞANS MOTORU ALANI */
             else if (msgLower === '!kazan') {
+                const simdi = Date.now();
+
+                // 1. Global Cooldown Kontrolü
+                if (simdi - sonKullanimGlobal < GLOBAL_COOLDOWN_SURESI * 1000) {
+                    terminalYaz(`Komut engellendi (Global Cooldown): !kazan -> Gönderen: ${kullanici}`, "system-info");
+                    return; // Hiçbir şey yazmadan direkt iptal et
+                }
+
+                // 2. Kullanıcı Cooldown Kontrolü
+                if (sonKullanimKullanici[kullanici]) {
+                    const gecenSure = (simdi - sonKullanimKullanici[kullanici]) / 1000;
+                    if (gecenSure < KULLANICI_COOLDOWN_SURESI) {
+                        const kalanSure = Math.ceil(KULLANICI_COOLDOWN_SURESI - gecenSure);
+                        terminalYaz(`Komut engellendi (Kullanıcı Cooldown): !kazan -> Gönderen: ${kullanici} (Kalan: ${kalanSure}sn)`, "system-info");
+                        
+                        // İsteğe bağlı: Kullanıcıya beklemesini fısıldayabilir veya chat'e yazabilirsin. 
+                        // Spam olmaması için chat'e yazmıyoruz, sadece terminalde gösteriyoruz.
+                        return; 
+                    }
+                }
+
+                // Cooldown sürelerini güncelle
+                sonKullanimGlobal = simdi;
+                sonKullanimKullanici[kullanici] = simdi;
+
                 terminalYaz(`Komut tetiklendi: !kazan -> Gönderen: ${kullanici}`, "command-trigger");
                 
                 if (SANS_HAVUZU.length === 0) {
@@ -247,6 +280,10 @@ function ayarlariKaydet() {
     });
 
     SANS_HAVUZU = dinamikHavuz;
+
+    // Ayarlar kaydolduğunda cooldown hafızasını sıfırlayalım
+    sonKullanimKullanici = {};
+    sonKullanimGlobal = 0;
 
     if (ws) {
         ws.onclose = function () {}; 
