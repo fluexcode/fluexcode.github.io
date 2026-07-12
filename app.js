@@ -14,6 +14,10 @@ const GLOBAL_COOLDOWN_SURESI = 1;     // Komut genel olarak kaç saniyede bir te
 let sonKullanimKullanici = {}; // { 'kullanici_adi': timestamp }
 let sonKullanimGlobal = 0;     // timestamp
 
+// 5 saniye sonra otomatik silinecek cooldown/bilgi mesajları için kuyruk.
+// Bot kendi mesajının echo'sunu alınca ID'sini yakalayıp /delete ile siler.
+let silinecekMesajKuyrugu = []; // [{ metin: "...", chatDiv: HTMLElement, silindi: Boolean, zaman: timestamp }]
+
 // Gelişmiş şans havuzu listesi
 let SANS_HAVUZU = [
     { min: 1, max: 5, ihtimal: 1, etiket: 'Efsanevi' },
@@ -103,6 +107,25 @@ function chatYaz(kullanici, mesaj, isBot = false) {
         chatLog.removeChild(chatLog.firstChild);
     }
     chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+}
+
+// Twitch'e gönderilen geçici (cooldown) mesajını chat'te gösterir ve
+// 5 saniye sonra hem Twitch'ten hem de yerel panelden silinmek üzere kuyruğa alır.
+function geciciMesajGonder(mesajMetni) {
+    // Çok eskide kalmış, echo'su hiç gelmemiş kayıtları temizle
+    const eskiSinir = Date.now() - 30000;
+    silinecekMesajKuyrugu = silinecekMesajKuyrugu.filter(k => k.zaman > eskiSinir);
+
+    ws.send(`PRIVMSG #${KANAL_ADI} :${mesajMetni}`);
+    const chatDiv = chatYaz(BOT_ADI, mesajMetni, true);
+    silinecekMesajKuyrugu.push({ metin: mesajMetni, chatDiv, silindi: false, zaman: Date.now() });
+}
+
+// Twitch'ten belirli bir mesaj ID'sini siler (moderator yetkisi gerektirir)
+function mesajSil(msgId) {
+    ws.send(`PRIVMSG #${KANAL_ADI} :/delete ${msgId}`);
+    terminalYaz(`Cooldown mesajı Twitch'ten silindi (ID: ${msgId})`, "system-info");
 }
 
 function baglan() {
@@ -163,8 +186,36 @@ function baglan() {
             const mesaj = match[2].trim();
             const isSelf = (kullanici.toLowerCase() === BOT_ADI.toLowerCase());
 
-            chatYaz(kullanici, mesaj, isSelf);
-            if (isSelf) return;
+            // Botun KENDİ gönderdiği mesajların echo'su gelir. Eğer bu mesaj
+            // silinmek üzere bekleyen bir cooldown mesajıysa; ID'sini yakalayıp
+            // 5 saniye sonra /delete ile siliyoruz. Echo'yu tekrar ekrana basmıyoruz.
+            if (isSelf) {
+                const idx = silinecekMesajKuyrugu.findIndex(k => k.metin === mesaj && !k.silindi);
+                if (idx !== -1) {
+                    const kayit = silinecekMesajKuyrugu[idx];
+                    silinecekMesajKuyrugu.splice(idx, 1);
+                    // Twitch tag'lerinden id alanı: id=<uuid> formatında
+                    const idEslesmesi = data.match(/id=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) 
+                                     || data.match(/id=([0-9a-z-]+)/i);
+                    if (idEslesmesi && idEslesmesi[1]) {
+                        const msgId = idEslesmesi[1];
+                        kayit.silindi = true;
+                        terminalYaz(`Cooldown mesajı 5 saniye sonra silinecek (ID: ${msgId})`, "system-info");
+                        setTimeout(function () {
+                            mesajSil(msgId);
+                            if (kayit.chatDiv && kayit.chatDiv.parentNode) kayit.chatDiv.remove();
+                        }, 5000);
+                    } else {
+                        terminalYaz(`Cooldown mesajı için ID bulunamadı, otomatik silme atlanıyor.`, "system-info");
+                    }
+                    return; // echo zaten yerel panelde gösterildi, tekrar gösterme
+                }
+                // Botun kendi mesajı ama kuyrukta yoksa (normal komut cevapları vs.) — ekrana yaz ve geç
+                chatYaz(kullanici, mesaj, true);
+                return;
+            }
+
+            chatYaz(kullanici, mesaj, false);
             if (botKilitli) return; 
 
             const msgLower = mesaj.toLowerCase();
@@ -190,8 +241,10 @@ function baglan() {
 
                 // 1. Global Cooldown Kontrolü
                 if (simdi - sonKullanimGlobal < GLOBAL_COOLDOWN_SURESI * 1000) {
-                    terminalYaz(`Komut engellendi (Global Cooldown): !kazan -> Gönderen: ${kullanici}`, "system-info");
-                    return; // Hiçbir şey yazmadan direkt iptal et
+                    const kalanGlobal = Math.ceil((GLOBAL_COOLDOWN_SURESI * 1000 - (simdi - sonKullanimGlobal)) / 1000);
+                    terminalYaz(`Komut engellendi (Global Cooldown): !kazan -> Gönderen: ${kullanici} (Kalan: ${kalanGlobal}sn)`, "system-info");
+                    geciciMesajGonder(`@${kullanici} ⏳ Global cooldown'a takıldınız! ${kalanGlobal} saniye sonra tekrar deneyin.`);
+                    return; // Komutu iptal et, cooldown mesajı 5 sn sonra otomatik silinir
                 }
 
                 // 2. Kullanıcı Cooldown Kontrolü
@@ -200,10 +253,8 @@ function baglan() {
                     if (gecenSure < KULLANICI_COOLDOWN_SURESI) {
                         const kalanSure = Math.ceil(KULLANICI_COOLDOWN_SURESI - gecenSure);
                         terminalYaz(`Komut engellendi (Kullanıcı Cooldown): !kazan -> Gönderen: ${kullanici} (Kalan: ${kalanSure}sn)`, "system-info");
-                        
-                        // İsteğe bağlı: Kullanıcıya beklemesini fısıldayabilir veya chat'e yazabilirsin. 
-                        // Spam olmaması için chat'e yazmıyoruz, sadece terminalde gösteriyoruz.
-                        return; 
+                        geciciMesajGonder(`@${kullanici} ⏳ Kişisel cooldown'a takıldınız! ${kalanSure} saniye sonra tekrar deneyin.`);
+                        return; // Komutu iptal et, cooldown mesajı 5 sn sonra otomatik silinir
                     }
                 }
 
