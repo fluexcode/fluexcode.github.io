@@ -8,7 +8,6 @@
 </head>
 <body>
 
-    <!-- ====== TÜM SAYFA ÇEKİLİŞ BANNERI ====== -->
     <div id="cekilisBanner" class="cekilis-banner" style="display:none;">
         <div class="cekilis-banner-content">
             <span class="cekilis-banner-icon">🎲</span>
@@ -16,64 +15,63 @@
         </div>
     </div>
 
-    <!-- ====== SEKMELER (TABS) ====== -->
     <div class="tab-bar">
         <button class="tab-btn active" data-sekme="anasayfa" onclick="sekmeGoster('anasayfa')">🏠 Ana Sayfa</button>
         <button class="tab-btn" data-sekme="cekilis" onclick="sekmeGoster('cekilis')">🎲 Çekiliş</button>
     </div>
 
-    <!-- ====== İÇERİK: ANA SAYFA ====== -->
-    <div id="sekme-anasayfa" class="sekme-icerik">
-        <div class="admin-settings">
-            <div class="admin-title">
-                <span>⚙️ Bot Kontrol & Gelişmiş Şans Yönetimi</span>
-                <span style="font-size: 13px; color: #adadb8;">Aktif Kanal: <strong id="currentChannelDisplay" style="color:#00f5d4;">davidkaan06</strong></span>
-            </div>
-            
-            <div class="input-grid">
-                <div class="input-group">
-                    <label for="targetChannelInput">HEDEF TWITCH KANALI</label>
-                    <input type="text" id="targetChannelInput" value="davidkaan06">
+    <div id="sekme-anasayfa" class="sekme-icerik active">
+        <div class="container">
+            <div class="admin-settings">
+                <div class="admin-title">
+                    <span>⚙️ Bot Kontrol & Gelişmiş Şans Yönetimi</span>
+                    <span style="font-size: 13px; color: #adadb8;">Aktif Kanal: <strong id="currentChannelDisplay" style="color:#00f5d4;">davidkaan06</strong></span>
                 </div>
-                <div class="input-group">
-                    <label for="dcLinkInput">!dc (DISCORD) LİNKİ</label>
-                    <input type="text" id="dcLinkInput" value="https://discord.gg/h2As7yGG8b">
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="targetChannelInput">HEDEF TWITCH KANALI</label>
+                        <input type="text" id="targetChannelInput" value="davidkaan06">
+                    </div>
+                    <div class="input-group">
+                        <label for="dcLinkInput">!dc (DISCORD) LİNKİ</label>
+                        <input type="text" id="dcLinkInput" value="https://discord.gg/h2As7yGG8b">
+                    </div>
+                    <div class="input-group">
+                        <label for="ytLinkInput">!yt (YOUTUBE) LİNKİ</label>
+                        <input type="text" id="ytLinkInput" value="https://www.youtube.com/@davidkaan2246">
+                    </div>
+                    <div class="input-group">
+                        <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
+                        <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="ytLinkInput">!yt (YOUTUBE) LİNKİ</label>
-                    <input type="text" id="ytLinkInput" value="https://www.youtube.com/@davidkaan2246">
+
+                <div class="probability-section">
+                    <div class="prob-header">
+                        <span>📊 !kazan İhtimal Tablosu (Ağırlıklı)</span>
+                        <button type="button" class="add-row-btn" onclick="aralikEkle(1, 5, 1, 'Nadir')">+ Yeni Aralık</button>
+                    </div>
+                    <div id="probRowsContainer"></div>
                 </div>
-                <div class="input-group">
-                    <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
-                    <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
-                </div>
+                
+                <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
             </div>
 
-            <div class="probability-section">
-                <div class="prob-header">
-                    <span>📊 !kazan İhtimal Tablosu (Ağırlıklı)</span>
-                    <button type="button" class="add-row-btn" onclick="aralikEkle(1, 5, 1, 'Nadir')">+ Yeni Aralık</button>
+            <div class="sol-paneller">
+                <div class="panel chat-panel">
+                    <div class="panel-title chat-title">💬 Canlı Twitch Chat</div>
+                    <div id="chatLog" class="log-area"></div>
                 </div>
-                <div id="probRowsContainer"></div>
-            </div>
-            
-            <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
-        </div>
-
-        <div class="sol-paneller">
-            <div class="panel chat-panel">
-                <div class="panel-title chat-title">💬 Canlı Twitch Chat</div>
-                <div id="chatLog" class="log-area"></div>
-            </div>
-            <div class="panel terminal-panel">
-                <div class="panel-title terminal-title">💻 Geliştirici Terminali</div>
-                <div id="terminalLog" class="log-area"></div>
+                <div class="panel terminal-panel">
+                    <div class="panel-title terminal-title">💻 Geliştirici Terminali</div>
+                    <div id="terminalLog" class="log-area"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ====== İÇERİK: ÇEKİLİŞ ====== -->
-    <div id="sekme-cekilis" class="sekme-icerik" style="display:none;">
+    <div id="sekme-cekilis" class="sekme-icerik">
         <div class="cekilis-sayfa-layout">
             <div class="panel cekilis-panel">
                 <div class="panel-title cekilis-panel-title">🎲 Çekiliş Paneli</div>

@@ -35,18 +35,14 @@ const currentChannelDisplay = document.getElementById('currentChannelDisplay');
 
 // ========== SEKMELER (TABS) ==========
 function sekmeGoster(sekmeAdi) {
-    // Tüm sekmeleri gizle
     document.querySelectorAll('.sekme-icerik').forEach(s => s.classList.remove('active'));
-    // Tüm tab butonlarından active kaldır
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     
-    // İstenen sekmeyi göster
     const hedefSekme = document.getElementById('sekme-' + sekmeAdi);
     if (hedefSekme) {
         hedefSekme.classList.add('active');
     }
     
-    // İlgili tab butonunu aktif yap
     const hedefBtn = document.querySelector('.tab-btn[data-sekme="' + sekmeAdi + '"]');
     if (hedefBtn) {
         hedefBtn.classList.add('active');
@@ -78,20 +74,25 @@ const cekilisKomutGosterSpan = document.getElementById('cekilisKomutGoster');
 
 // Çekiliş ayarlarını güncelle
 function cekilisAyarlariniGuncelle() {
-    cekilisKomut = (document.getElementById('cekilisKomutInput').value.trim() || '!çekiliş').toLowerCase();
-    cekilisUstUste = document.getElementById('cekilisUstUste').value;
-    cekilisTekrarKazanma = document.getElementById('cekilisTekrarKazanma').value;
-    cekilisBildirim = document.getElementById('cekilisBildirim').value;
+    const cmdInp = document.getElementById('cekilisKomutInput');
+    const uuSel = document.getElementById('cekilisUstUste');
+    const tkSel = document.getElementById('cekilisTekrarKazanma');
+    const bldSel = document.getElementById('cekilisBildirim');
+
+    if (cmdInp) cekilisKomut = (cmdInp.value.trim() || '!çekiliş').toLowerCase();
+    if (uuSel) cekilisUstUste = uuSel.value;
+    if (tkSel) cekilisTekrarKazanma = tkSel.value;
+    if (bldSel) cekilisBildirim = bldSel.value;
 }
 
 // Tüm sayfa çekiliş banner'ını güncelle
 function cekilisBannerGuncelle() {
     if (cekilisAktif) {
-        cekilisBanner.style.display = 'block';
-        cekilisBannerText.textContent = `🎯 ÇEKİLİŞ AKTİF! Katılmak için ${cekilisKomut} yazın! (${cekilisKatilimcilar.length} katılımcı)`;
+        if (cekilisBanner) cekilisBanner.style.display = 'block';
+        if (cekilisBannerText) cekilisBannerText.textContent = `🎯 ÇEKİLİŞ AKTİF! Katılmak için ${cekilisKomut} yazın! (${cekilisKatilimcilar.length} katılımcı)`;
         document.body.classList.add('cekilis-banner-active');
     } else {
-        cekilisBanner.style.display = 'none';
+        if (cekilisBanner) cekilisBanner.style.display = 'none';
         document.body.classList.remove('cekilis-banner-active');
     }
 }
@@ -99,26 +100,30 @@ function cekilisBannerGuncelle() {
 // Çekiliş durum panellerini güncelle
 function cekilisUIguncelle() {
     if (cekilisAktif) {
-        cekilisDurumDiv.className = 'cekilis-durum aktif';
-        cekilisDurumDiv.innerHTML = `<span>🎯 ÇEKİLİŞ AKTİF! Katılmak için <strong>${cekilisKomut}</strong> yazın!</span>`;
-        cekilisBaslatBtn.style.display = 'none';
-        cekilisBitirBtn.style.display = 'inline-block';
+        if (cekilisDurumDiv) {
+            cekilisDurumDiv.className = 'cekilis-durum aktif';
+            cekilisDurumDiv.innerHTML = `<span>🎯 ÇEKİLİŞ AKTİF! Katılmak için <strong>${cekilisKomut}</strong> yazın!</span>`;
+        }
+        if (cekilisBaslatBtn) cekilisBaslatBtn.style.display = 'none';
+        if (cekilisBitirBtn) cekilisBitirBtn.style.display = 'inline-block';
     } else {
-        cekilisDurumDiv.className = 'cekilis-durum';
-        cekilisDurumDiv.innerHTML = '<span>⏸️ Çekiliş aktif değil</span>';
-        cekilisBaslatBtn.style.display = 'inline-block';
-        cekilisBitirBtn.style.display = 'none';
+        if (cekilisDurumDiv) {
+            cekilisDurumDiv.className = 'cekilis-durum';
+            cekilisDurumDiv.innerHTML = '<span>⏸️ Çekiliş aktif değil</span>';
+        }
+        if (cekilisBaslatBtn) cekilisBaslatBtn.style.display = 'inline-block';
+        if (cekilisBitirBtn) cekilisBitirBtn.style.display = 'none';
     }
     
-    katilimciSayisiSpan.textContent = cekilisKatilimcilar.length;
-    katilimciSayisiSpan2.textContent = cekilisKatilimcilar.length;
-    toplamCekilisSpan.textContent = cekilisKazananlar.length;
+    if (katilimciSayisiSpan) katilimciSayisiSpan.textContent = cekilisKatilimcilar.length;
+    if (katilimciSayisiSpan2) katilimciSayisiSpan2.textContent = cekilisKatilimcilar.length;
+    if (toplamCekilisSpan) toplamCekilisSpan.textContent = cekilisKazananlar.length;
     
-    if (cekilisKazananlar.length > 0) {
+    if (cekilisKazananlar.length > 0 && sonKazananSpan) {
         sonKazananSpan.textContent = cekilisKazananlar[cekilisKazananlar.length - 1];
     }
     
-    cekilisKomutGosterSpan.textContent = cekilisKomut;
+    if (cekilisKomutGosterSpan) cekilisKomutGosterSpan.textContent = cekilisKomut;
     
     kazananlarListesiniGuncelle();
     katilimciListesiniGuncelle();
@@ -127,6 +132,7 @@ function cekilisUIguncelle() {
 
 // Katılımcı listesini UI'da göster
 function katilimciListesiniGuncelle() {
+    if (!katilimciListesiDiv) return;
     katilimciListesiDiv.innerHTML = '';
     
     if (cekilisKatilimcilar.length === 0) {
@@ -163,6 +169,7 @@ function katilimciListesiniGuncelle() {
 
 // Kazananlar listesini UI'da göster
 function kazananlarListesiniGuncelle() {
+    if (!kazananlarListesiDiv) return;
     kazananlarListesiDiv.innerHTML = '';
     
     if (cekilisKazananlar.length === 0) {
@@ -277,6 +284,7 @@ function kazananlariTemizle() {
 // Panel arayüzüne yeni satır ekleyen fonksiyon
 function aralikEkle(min = 0, max = 100, ihtimal = 10, etiket = 'Grup') {
     const container = document.getElementById('probRowsContainer');
+    if(!container) return;
     const row = document.createElement('div');
     row.className = 'prob-row';
     row.innerHTML = `
@@ -294,7 +302,9 @@ function aralikEkle(min = 0, max = 100, ihtimal = 10, etiket = 'Grup') {
 
 // Başlangıçta varsayılan listeyi ekrana çiz
 function tabloyuDoldur() {
-    document.getElementById('probRowsContainer').innerHTML = '';
+    const container = document.getElementById('probRowsContainer');
+    if(!container) return;
+    container.innerHTML = '';
     SANS_HAVUZU.forEach(item => {
         aralikEkle(item.min, item.max, item.ihtimal, item.etiket);
     });
@@ -303,6 +313,7 @@ function tabloyuDoldur() {
 const MAKS_MESAJ = 200;
 
 function terminalYaz(mesaj, stil = 'term-line') {
+    if(!terminalLog) return;
     const zaman = new Date().toLocaleTimeString();
     const div = document.createElement('div');
     div.className = stil;
@@ -315,6 +326,7 @@ function terminalYaz(mesaj, stil = 'term-line') {
 }
 
 function chatYaz(kullanici, mesaj, isBot = false) {
+    if(!chatLog) return;
     const zaman = new Date().toLocaleTimeString();
     const div = document.createElement('div');
     div.className = 'chat-msg';
@@ -368,7 +380,7 @@ function baglan() {
     clearTimeout(reconnectTimeout); 
     
     terminalYaz(`#${KANAL_ADI} kanalı için yeni bağlantı kuruluyor...`, "system-info");
-    currentChannelDisplay.innerText = KANAL_ADI;
+    if(currentChannelDisplay) currentChannelDisplay.innerText = KANAL_ADI;
 
     ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
 
@@ -579,10 +591,15 @@ function baglan() {
 function ayarlariKaydet() {
     terminalYaz("Ayarlar ve Şans Grupları güncelleniyor, bot yeniden başlatılıyor...", "system-info");
     
-    KANAL_ADI = document.getElementById('targetChannelInput').value.trim().toLowerCase();
-    DC_LINK = document.getElementById('dcLinkInput').value.trim();
-    YT_LINK = document.getElementById('ytLinkInput').value.trim();
-    SV_LINK = document.getElementById('svLinkInput').value.trim();
+    const targetInp = document.getElementById('targetChannelInput');
+    const dcInp = document.getElementById('dcLinkInput');
+    const ytInp = document.getElementById('ytLinkInput');
+    const svInp = document.getElementById('svLinkInput');
+
+    if(targetInp) KANAL_ADI = targetInp.value.trim().toLowerCase();
+    if(dcInp) DC_LINK = dcInp.value.trim();
+    if(ytInp) YT_LINK = ytInp.value.trim();
+    if(svInp) SV_LINK = svInp.value.trim();
     
     const dinamikHavuz = [];
     const rows = document.querySelectorAll('.prob-row');
