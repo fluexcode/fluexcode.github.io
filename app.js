@@ -33,6 +33,26 @@ const chatLog = document.getElementById('chatLog');
 const terminalLog = document.getElementById('terminalLog');
 const currentChannelDisplay = document.getElementById('currentChannelDisplay');
 
+// ========== SEKMELER (TABS) ==========
+function sekmeGoster(sekmeAdi) {
+    // Tüm sekmeleri gizle
+    document.querySelectorAll('.sekme-icerik').forEach(s => s.classList.remove('active'));
+    // Tüm tab butonlarından active kaldır
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    // İstenen sekmeyi göster
+    const hedefSekme = document.getElementById('sekme-' + sekmeAdi);
+    if (hedefSekme) {
+        hedefSekme.classList.add('active');
+    }
+    
+    // İlgili tab butonunu aktif yap
+    const hedefBtn = document.querySelector('.tab-btn[data-sekme="' + sekmeAdi + '"]');
+    if (hedefBtn) {
+        hedefBtn.classList.add('active');
+    }
+}
+
 // ========== ÇEKİLİŞ SİSTEMİ ==========
 let cekilisAktif = false;
 let cekilisKatilimcilar = [];
@@ -594,4 +614,5 @@ function ayarlariKaydet() {
 // Başlangıç tetiklemeleri
 tabloyuDoldur();
 cekilisUIguncelle();
+sekmeGoster('anasayfa');
 baglan();

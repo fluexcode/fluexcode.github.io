@@ -12,7 +12,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    gap: 20px;
+    gap: 16px;
     overflow: hidden;
 }
 
@@ -20,6 +20,59 @@ body {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: #9146ff; border-radius: 10px; }
+
+/* ===== TAB BAR (SEKMELER) ===== */
+.tab-bar {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    background: #1c1c26;
+    color: #adadb8;
+    border: 1px solid #2a2a3a;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #2a2a3a;
+    color: #fff;
+}
+
+.tab-btn.active {
+    background: #9146ff;
+    color: #fff;
+    border-color: #9146ff;
+}
+
+/* ===== SEKMELER (İÇERİK) ===== */
+.sekme-icerik {
+    display: none;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+.sekme-icerik.active {
+    display: flex;
+}
+
+/* ===== Çekiliş Sayfası Layout ===== */
+.cekilis-sayfa-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+}
 
 /* ===== Admin Ayarları Paneli ===== */
 .admin-settings {
@@ -525,6 +578,11 @@ body.cekilis-banner-active {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    flex: 1;
+}
+
+.cekilis-ayar-panel {
+    flex-shrink: 0;
 }
 
 .cekilis-bilgi {
@@ -596,4 +654,5 @@ body.cekilis-banner-active {
     body { padding: 12px; height: auto; overflow-y: auto; }
     .admin-settings { max-height: none; }
     .cekilis-istatistik { grid-template-columns: 1fr; }
+    .cekilis-alt-layout { flex-direction: column; min-height: 300px; }
 }
