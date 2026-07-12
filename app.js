@@ -33,6 +33,70 @@ const chatLog = document.getElementById('chatLog');
 const terminalLog = document.getElementById('terminalLog');
 const currentChannelDisplay = document.getElementById('currentChannelDisplay');
 
+// ========== SAYFA YÖNLENDİRME (ROUTING) ==========
+function sayfaGoster(sayfaAdi) {
+    // Tüm sayfaları gizle
+    document.querySelectorAll('.sayfa').forEach(s => s.classList.remove('aktif'));
+    // Tüm nav linklerinden active kaldır
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    
+    // İstenen sayfayı göster
+    const hedefSayfa = document.getElementById('sayfa-' + sayfaAdi);
+    if (hedefSayfa) {
+        hedefSayfa.classList.add('aktif');
+    }
+    
+    // İlgili nav linkini aktif yap
+    const hedefLink = document.querySelector('.nav-link[data-sayfa="' + sayfaAdi + '"]');
+    if (hedefLink) {
+        hedefLink.classList.add('active');
+    }
+    
+    // URL'i güncelle (pushState ile sayfa yenilenmez)
+    const url = '/' + sayfaAdi;
+    if (window.location.pathname !== url) {
+        window.history.pushState({ sayfa: sayfaAdi }, '', url);
+    }
+}
+
+// URL'deki path'e göre hangi sayfanın gösterileceğini belirle
+function sayfaBelirle() {
+    let path = window.location.pathname.replace(/\/+$/, ''); // sondaki /'leri temizle
+    
+    if (path === '' || path === '/index.html') {
+        path = '/anasayfa';
+    }
+    
+    // Sayfa adını path'ten çıkar
+    let sayfaAdi = path.replace(/^\//, ''); // baştaki /'yi kaldır
+    
+    // Geçerli sayfa mı kontrol et
+    const gecerliSayfalar = ['anasayfa', 'cekilis'];
+    if (!gecerliSayfalar.includes(sayfaAdi)) {
+        sayfaAdi = 'anasayfa';
+    }
+    
+    sayfaGoster(sayfaAdi);
+}
+
+// Navigasyon linklerine tıklama olayı ekle
+function navLinkleriAyarla() {
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const sayfaAdi = this.getAttribute('data-sayfa');
+            if (sayfaAdi) {
+                sayfaGoster(sayfaAdi);
+            }
+        });
+    });
+}
+
+// Tarayıcı geri/ileri butonları için
+window.addEventListener('popstate', function(e) {
+    sayfaBelirle();
+});
+
 // ========== ÇEKİLİŞ SİSTEMİ ==========
 let cekilisAktif = false;
 let cekilisKatilimcilar = [];
@@ -462,8 +526,6 @@ function baglan() {
                 cekilisKatilimcilar.push({ kullanici: kullanici, zaman: Date.now() });
                 terminalYaz(`🎯 ${kullanici} çekilişe katıldı! (Toplam: ${cekilisKatilimcilar.length})`, "command-trigger");
                 
-                katilimciSayisiSpan.textContent = cekilisKatilimcilar.length;
-                
                 if (cekilisBildirim === 'evet') {
                     const cevap = `@${kullanici} ✅ Çekilişe katıldın! Başarılar! 🍀`;
                     ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
@@ -593,7 +655,9 @@ function ayarlariKaydet() {
     baglan();
 }
 
-// Başlangıç tetiklemeleri
+// ========== BAŞLANGIÇ ==========
 tabloyuDoldur();
 cekilisUIguncelle();
+navLinkleriAyarla();
+sayfaBelirle();
 baglan();
