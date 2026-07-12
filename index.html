@@ -3,55 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twitch Bot Yönetim Paneli</title>
+    <title>FluexCode - Bot Yönetim Paneli</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="admin-settings">
-        <div class="admin-title">
-            <span>⚙️ Bot Kontrol & Gelişmiş Şans Yönetimi</span>
-            <span style="font-size: 13px; color: #adadb8;">Aktif Kanal: <strong id="currentChannelDisplay" style="color:#00f5d4;">davidkaan06</strong></span>
+    <!-- ====== ÜST NAVİGASYON ====== -->
+    <nav class="nav-bar">
+        <div class="nav-left">
+            <span class="nav-logo">⚡ FluexCode</span>
         </div>
-        
-        <div class="input-grid">
-            <div class="input-group">
-                <label for="targetChannelInput">HEDEF TWITCH KANALI</label>
-                <input type="text" id="targetChannelInput" value="davidkaan06">
-            </div>
-            <div class="input-group">
-                <label for="dcLinkInput">!dc (DISCORD) LİNKİ</label>
-                <input type="text" id="dcLinkInput" value="https://discord.gg/h2As7yGG8b">
-            </div>
-            <div class="input-group">
-                <label for="ytLinkInput">!yt (YOUTUBE) LİNKİ</label>
-                <input type="text" id="ytLinkInput" value="https://www.youtube.com/@davidkaan2246">
-            </div>
-            <div class="input-group">
-                <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
-                <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
-            </div>
+        <div class="nav-right">
+            <a href="/anasayfa" class="nav-link" data-sayfa="anasayfa">🏠 Ana Sayfa</a>
+            <a href="/cekilis" class="nav-link" data-sayfa="cekilis">🎲 Çekiliş</a>
         </div>
+    </nav>
 
-        <div class="probability-section">
-            <div class="prob-header">
-                <span>📊 !kazan Komutu İhtimal Tablosu (Toplam Oran Önemli Değildir, Ağırlıklıdır)</span>
-                <button type="button" class="add-row-btn" onclick="aralikEkle(1, 5, 1, 'Nadir')">+ Yeni Aralık Ekle</button>
-            </div>
-            <div id="probRowsContainer"></div>
+    <!-- ====== TÜM SAYFA ÇEKİLİŞ BANNERI ====== -->
+    <div id="cekilisBanner" class="cekilis-banner" style="display:none;">
+        <div class="cekilis-banner-content">
+            <span class="cekilis-banner-icon">🎲</span>
+            <span class="cekilis-banner-text" id="cekilisBannerText">ÇEKİLİŞ AKTİF! Katılmak için yazın!</span>
         </div>
-        
-        <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
     </div>
 
-    <div class="container">
-        <div class="panel">
-            <div class="panel-title chat-title">💬 Canlı Twitch Chat</div>
-            <div id="chatLog" class="log-area"></div>
+    <!-- ====== SAYFA: ANA SAYFA ====== -->
+    <div id="sayfa-anasayfa" class="sayfa">
+        <div class="admin-settings">
+            <div class="admin-title">
+                <span>⚙️ Bot Kontrol & Gelişmiş Şans Yönetimi</span>
+                <span style="font-size: 13px; color: #adadb8;">Aktif Kanal: <strong id="currentChannelDisplay" style="color:#00f5d4;">davidkaan06</strong></span>
+            </div>
+            
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="targetChannelInput">HEDEF TWITCH KANALI</label>
+                    <input type="text" id="targetChannelInput" value="davidkaan06">
+                </div>
+                <div class="input-group">
+                    <label for="dcLinkInput">!dc (DISCORD) LİNKİ</label>
+                    <input type="text" id="dcLinkInput" value="https://discord.gg/h2As7yGG8b">
+                </div>
+                <div class="input-group">
+                    <label for="ytLinkInput">!yt (YOUTUBE) LİNKİ</label>
+                    <input type="text" id="ytLinkInput" value="https://www.youtube.com/@davidkaan2246">
+                </div>
+                <div class="input-group">
+                    <label for="svLinkInput">!sv (SERVER) LİNKİ</label>
+                    <input type="text" id="svLinkInput" value="https://lirin.to/register?ref=david">
+                </div>
+            </div>
+
+            <div class="probability-section">
+                <div class="prob-header">
+                    <span>📊 !kazan İhtimal Tablosu (Ağırlıklı)</span>
+                    <button type="button" class="add-row-btn" onclick="aralikEkle(1, 5, 1, 'Nadir')">+ Yeni Aralık</button>
+                </div>
+                <div id="probRowsContainer"></div>
+            </div>
+            
+            <button class="save-btn" onclick="ayarlariKaydet()">💾 Ayarları Kaydet ve Botu Yeniden Başlat</button>
         </div>
-        <div class="panel">
-            <div class="panel-title terminal-title">💻 Geliştirici Terminali (Hata/Durum)</div>
-            <div id="terminalLog" class="log-area"></div>
+
+        <div class="sol-paneller">
+            <div class="panel chat-panel">
+                <div class="panel-title chat-title">💬 Canlı Twitch Chat</div>
+                <div id="chatLog" class="log-area"></div>
+            </div>
+            <div class="panel terminal-panel">
+                <div class="panel-title terminal-title">💻 Geliştirici Terminali</div>
+                <div id="terminalLog" class="log-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== SAYFA: ÇEKİLİŞ ====== -->
+    <div id="sayfa-cekilis" class="sayfa" style="display:none;">
+        <div class="panel cekilis-panel">
+            <div class="panel-title cekilis-panel-title">🎲 Çekiliş Paneli</div>
+            
+            <div id="cekilisDurum" class="cekilis-durum">
+                <span>⏸️ Çekiliş aktif değil</span>
+            </div>
+
+            <div class="cekilis-bilgi">
+                <div class="cekilis-bilgi-item">
+                    <span class="cekilis-bilgi-label">📝 Çekiliş Komutu</span>
+                    <span class="cekilis-bilgi-deger" id="cekilisKomutGoster">!çekiliş</span>
+                </div>
+                <div class="cekilis-bilgi-item">
+                    <span class="cekilis-bilgi-label">📋 Katılanları Gör</span>
+                    <span class="cekilis-bilgi-deger">!katılan</span>
+                </div>
+                <div class="cekilis-bilgi-item">
+                    <span class="cekilis-bilgi-label">🎰 Şans Komutu</span>
+                    <span class="cekilis-bilgi-deger">!kazan</span>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                <button type="button" class="add-row-btn" id="cekilisBaslatBtn" onclick="cekilisBaslat()">🎯 Çekilişi Başlat</button>
+                <button type="button" class="add-row-btn" id="cekilisBitirBtn" onclick="cekilisBitir()" style="background:#eb0400; display:none;">⛔ Bitir ve Seç</button>
+            </div>
+
+            <div class="cekilis-istatistik" style="margin-bottom:12px;">
+                <div class="cekilis-istatistik-item">
+                    <span class="istatistik-label">Katılımcı</span>
+                    <span class="istatistik-deger" id="katilimciSayisi">0</span>
+                </div>
+                <div class="cekilis-istatistik-item">
+                    <span class="istatistik-label">Toplam Çekiliş</span>
+                    <span class="istatistik-deger" id="toplamCekilis">0</span>
+                </div>
+                <div class="cekilis-istatistik-item">
+                    <span class="istatistik-label">Son Kazanan</span>
+                    <span class="istatistik-deger" id="sonKazanan">-</span>
+                </div>
+            </div>
+
+            <div class="cekilis-alt-layout">
+                <div class="cekilis-alt-kolon">
+                    <div class="cekilis-alt-baslik">👥 Katılımcılar (<span id="katilimciSayisi2">0</span>)</div>
+                    <div class="katilimci-listesi" id="katilimciListesi">
+                        <div class="kazanan-yok" style="padding:10px;">Katılımcı yok</div>
+                    </div>
+                </div>
+                <div class="cekilis-alt-kolon">
+                    <div class="cekilis-alt-baslik">🏆 Kazananlar</div>
+                    <div class="kazananlar-listesi" id="kazananlarListesi">
+                        <div class="kazanan-yok">Henüz kazanan yok</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="katilimci-btn" onclick="kazananlariTemizle()" style="width:100%; margin-top:12px; background:#eb0400;">🗑️ Geçmişi Temizle</button>
+        </div>
+
+        <!-- Çekiliş Ayarları Alt Panel -->
+        <div class="panel cekilis-ayar-panel" style="margin-top:20px;">
+            <div class="panel-title cekilis-panel-title">⚙️ Çekiliş Ayarları</div>
+            <div class="cekilis-ayarlari">
+                <div class="cekilis-ayar-grup">
+                    <label>Çekiliş Komutu</label>
+                    <input type="text" id="cekilisKomutInput" value="!çekiliş" class="cekilis-input">
+                </div>
+                <div class="cekilis-ayar-grup">
+                    <label>Üst üste yazma</label>
+                    <select id="cekilisUstUste" class="cekilis-select">
+                        <option value="hayir">Hayır (1 kişi 1 kere)</option>
+                        <option value="evet">Evet</option>
+                    </select>
+                </div>
+                <div class="cekilis-ayar-grup">
+                    <label>Tekrar kazanma</label>
+                    <select id="cekilisTekrarKazanma" class="cekilis-select">
+                        <option value="hayir">Hayır</option>
+                        <option value="evet">Evet</option>
+                    </select>
+                </div>
+                <div class="cekilis-ayar-grup">
+                    <label>Chat bildirimi</label>
+                    <select id="cekilisBildirim" class="cekilis-select">
+                        <option value="evet">Gönder</option>
+                        <option value="hayir">Gönderme</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 

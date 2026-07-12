@@ -7,16 +7,15 @@ let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
 let SV_LINK = 'https://lirin.to/register?ref=david';
 
 // COOLDOWN AYARLARI (Saniye Cinsinden)
-const KULLANICI_COOLDOWN_SURESI = 30; // Bir kullanıcı !kazan yazdıktan sonra kaç saniye beklemeli?
-const GLOBAL_COOLDOWN_SURESI = 1;     // Komut genel olarak kaç saniyede bir tetiklenebilsin?
+const KULLANICI_COOLDOWN_SURESI = 30;
+const GLOBAL_COOLDOWN_SURESI = 1;
 
 // Cooldown takip objeleri
-let sonKullanimKullanici = {}; // { 'kullanici_adi': timestamp }
-let sonKullanimGlobal = 0;     // timestamp
+let sonKullanimKullanici = {};
+let sonKullanimGlobal = 0;
 
 // 5 saniye sonra otomatik silinecek cooldown/bilgi mesajları için kuyruk.
-// Bot kendi mesajının echo'sunu alınca ID'sini yakalayıp /delete ile siler.
-let silinecekMesajKuyrugu = []; // [{ metin: "...", chatDiv: HTMLElement, silindi: Boolean, zaman: timestamp }]
+let silinecekMesajKuyrugu = [];
 
 // Gelişmiş şans havuzu listesi
 let SANS_HAVUZU = [
@@ -33,6 +32,227 @@ let reconnectTimeout;
 const chatLog = document.getElementById('chatLog');
 const terminalLog = document.getElementById('terminalLog');
 const currentChannelDisplay = document.getElementById('currentChannelDisplay');
+
+// ========== ÇEKİLİŞ SİSTEMİ ==========
+let cekilisAktif = false;
+let cekilisKatilimcilar = [];
+let cekilisKazananlar = [];
+let cekilisKomut = '!çekiliş';
+let cekilisUstUste = 'hayir';
+let cekilisTekrarKazanma = 'hayir';
+let cekilisBildirim = 'evet';
+
+// Çekiliş UI elementleri
+const cekilisDurumDiv = document.getElementById('cekilisDurum');
+const cekilisBaslatBtn = document.getElementById('cekilisBaslatBtn');
+const cekilisBitirBtn = document.getElementById('cekilisBitirBtn');
+const katilimciSayisiSpan = document.getElementById('katilimciSayisi');
+const katilimciSayisiSpan2 = document.getElementById('katilimciSayisi2');
+const toplamCekilisSpan = document.getElementById('toplamCekilis');
+const sonKazananSpan = document.getElementById('sonKazanan');
+const kazananlarListesiDiv = document.getElementById('kazananlarListesi');
+const katilimciListesiDiv = document.getElementById('katilimciListesi');
+const cekilisBanner = document.getElementById('cekilisBanner');
+const cekilisBannerText = document.getElementById('cekilisBannerText');
+const cekilisKomutGosterSpan = document.getElementById('cekilisKomutGoster');
+
+// Çekiliş ayarlarını güncelle
+function cekilisAyarlariniGuncelle() {
+    cekilisKomut = (document.getElementById('cekilisKomutInput').value.trim() || '!çekiliş').toLowerCase();
+    cekilisUstUste = document.getElementById('cekilisUstUste').value;
+    cekilisTekrarKazanma = document.getElementById('cekilisTekrarKazanma').value;
+    cekilisBildirim = document.getElementById('cekilisBildirim').value;
+}
+
+// Tüm sayfa çekiliş banner'ını güncelle
+function cekilisBannerGuncelle() {
+    if (cekilisAktif) {
+        cekilisBanner.style.display = 'block';
+        cekilisBannerText.textContent = `🎯 ÇEKİLİŞ AKTİF! Katılmak için ${cekilisKomut} yazın! (${cekilisKatilimcilar.length} katılımcı)`;
+        document.body.classList.add('cekilis-banner-active');
+    } else {
+        cekilisBanner.style.display = 'none';
+        document.body.classList.remove('cekilis-banner-active');
+    }
+}
+
+// Çekiliş durum panellerini güncelle
+function cekilisUIguncelle() {
+    if (cekilisAktif) {
+        cekilisDurumDiv.className = 'cekilis-durum aktif';
+        cekilisDurumDiv.innerHTML = `<span>🎯 ÇEKİLİŞ AKTİF! Katılmak için <strong>${cekilisKomut}</strong> yazın!</span>`;
+        cekilisBaslatBtn.style.display = 'none';
+        cekilisBitirBtn.style.display = 'inline-block';
+    } else {
+        cekilisDurumDiv.className = 'cekilis-durum';
+        cekilisDurumDiv.innerHTML = '<span>⏸️ Çekiliş aktif değil</span>';
+        cekilisBaslatBtn.style.display = 'inline-block';
+        cekilisBitirBtn.style.display = 'none';
+    }
+    
+    katilimciSayisiSpan.textContent = cekilisKatilimcilar.length;
+    katilimciSayisiSpan2.textContent = cekilisKatilimcilar.length;
+    toplamCekilisSpan.textContent = cekilisKazananlar.length;
+    
+    if (cekilisKazananlar.length > 0) {
+        sonKazananSpan.textContent = cekilisKazananlar[cekilisKazananlar.length - 1];
+    }
+    
+    cekilisKomutGosterSpan.textContent = cekilisKomut;
+    
+    kazananlarListesiniGuncelle();
+    katilimciListesiniGuncelle();
+    cekilisBannerGuncelle();
+}
+
+// Katılımcı listesini UI'da göster
+function katilimciListesiniGuncelle() {
+    katilimciListesiDiv.innerHTML = '';
+    
+    if (cekilisKatilimcilar.length === 0) {
+        katilimciListesiDiv.innerHTML = '<div class="kazanan-yok" style="padding:10px;">Katılımcı yok</div>';
+        return;
+    }
+    
+    const gorulen = new Set();
+    const benzersiz = cekilisKatilimcilar.filter(k => {
+        const varMi = gorulen.has(k.kullanici);
+        gorulen.add(k.kullanici);
+        return !varMi;
+    });
+    
+    const tersListe = [...benzersiz].reverse();
+    tersListe.forEach((k) => {
+        const item = document.createElement('div');
+        item.className = 'katilimci-item';
+        
+        const avatar = document.createElement('img');
+        avatar.className = 'katilimci-avatar';
+        avatar.src = `https://static-cdn.jtvnw.net/jtv_user_pictures/${k.kullanici}-profile_image-70x70.png`;
+        avatar.onerror = function() { this.src = 'https://static-cdn.jtvnw.net/jtv_user_pictures/unknown-profile_image-70x70.png'; };
+        
+        const isimSpan = document.createElement('span');
+        isimSpan.className = 'katilimci-isim';
+        isimSpan.textContent = k.kullanici;
+        
+        item.appendChild(avatar);
+        item.appendChild(isimSpan);
+        katilimciListesiDiv.appendChild(item);
+    });
+}
+
+// Kazananlar listesini UI'da göster
+function kazananlarListesiniGuncelle() {
+    kazananlarListesiDiv.innerHTML = '';
+    
+    if (cekilisKazananlar.length === 0) {
+        kazananlarListesiDiv.innerHTML = '<div class="kazanan-yok">Henüz kazanan yok</div>';
+        return;
+    }
+    
+    const tersListe = [...cekilisKazananlar].reverse();
+    tersListe.forEach((kazanan, index) => {
+        const item = document.createElement('div');
+        item.className = 'kazanan-item';
+        
+        const isimSpan = document.createElement('span');
+        isimSpan.className = 'kazanan-isim';
+        isimSpan.textContent = kazanan;
+        
+        const badgeSpan = document.createElement('span');
+        badgeSpan.className = 'kazanan-badge';
+        badgeSpan.textContent = `#${cekilisKazananlar.length - index}`;
+        
+        item.appendChild(isimSpan);
+        item.appendChild(badgeSpan);
+        kazananlarListesiDiv.appendChild(item);
+    });
+}
+
+// Çekiliş BAŞLAT
+function cekilisBaslat() {
+    if (cekilisAktif) {
+        terminalYaz('Çekiliş zaten aktif!', 'system-error');
+        return;
+    }
+    
+    cekilisAyarlariniGuncelle();
+    cekilisKatilimcilar = [];
+    cekilisAktif = true;
+    
+    terminalYaz(`🎯 Çekiliş başlatıldı! Komut: ${cekilisKomut}`, 'system-success');
+    
+    if (cekilisBildirim === 'evet' && ws && ws.readyState === WebSocket.OPEN) {
+        const duyuru = `🎯 ÇEKİLİŞ BAŞLADI! Katılmak için ${cekilisKomut} yazın! Kazanan belli olana kadar katılabilirsiniz!`;
+        ws.send(`PRIVMSG #${KANAL_ADI} :${duyuru}`);
+        chatYaz(BOT_ADI, duyuru, true);
+    }
+    
+    cekilisUIguncelle();
+}
+
+// Çekiliş BİTİR ve kazananı seç
+function cekilisBitir() {
+    if (!cekilisAktif) {
+        terminalYaz('Aktif bir çekiliş yok!', 'system-error');
+        return;
+    }
+    
+    cekilisAktif = false;
+    
+    let uygunKatilimcilar = [...cekilisKatilimcilar];
+    
+    if (cekilisUstUste === 'hayir') {
+        const gorulen = new Set();
+        uygunKatilimcilar = uygunKatilimcilar.filter(k => {
+            const varMi = gorulen.has(k.kullanici);
+            gorulen.add(k.kullanici);
+            return !varMi;
+        });
+    }
+    
+    if (cekilisTekrarKazanma === 'hayir' && cekilisKazananlar.length > 0) {
+        uygunKatilimcilar = uygunKatilimcilar.filter(k => !cekilisKazananlar.includes(k.kullanici));
+    }
+    
+    if (uygunKatilimcilar.length === 0) {
+        terminalYaz('Çekiliş bitti! Ama katılımcı yok veya uygun katılımcı kalmadı!', 'system-error');
+        
+        if (cekilisBildirim === 'evet' && ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(`PRIVMSG #${KANAL_ADI} :😞 Çekiliş bitti ama katılımcı olmadığı için kazanan seçilemedi!`);
+            chatYaz(BOT_ADI, '😞 Çekiliş bitti ama katılımcı olmadığı için kazanan seçilemedi!', true);
+        }
+        
+        cekilisUIguncelle();
+        return;
+    }
+    
+    const kazananIndex = Math.floor(Math.random() * uygunKatilimcilar.length);
+    const kazanan = uygunKatilimcilar[kazananIndex].kullanici;
+    
+    cekilisKazananlar.push(kazanan);
+    
+    terminalYaz(`🏆 Çekiliş kazananı: ${kazanan}!`, 'system-success');
+    
+    if (cekilisBildirim === 'evet' && ws && ws.readyState === WebSocket.OPEN) {
+        const kazananMesaj = `🎉🎉 ÇEKİLİŞ KAZANANI: @${kazanan}! Tebrikler! 🎉🎉`;
+        ws.send(`PRIVMSG #${KANAL_ADI} :${kazananMesaj}`);
+        chatYaz(BOT_ADI, kazananMesaj, true);
+    }
+    
+    cekilisUIguncelle();
+}
+
+// Kazananlar geçmişini temizle
+function kazananlariTemizle() {
+    if (cekilisKazananlar.length === 0) return;
+    
+    if (confirm('Tüm kazanan geçmişini temizlemek istediğinize emin misiniz?')) {
+        cekilisKazananlar = [];
+        terminalYaz('Kazananlar geçmişi temizlendi.', 'system-info');
+        cekilisUIguncelle();
+    }
+}
 
 // Panel arayüzüne yeni satır ekleyen fonksiyon
 function aralikEkle(min = 0, max = 100, ihtimal = 10, etiket = 'Grup') {
@@ -60,7 +280,6 @@ function tabloyuDoldur() {
     });
 }
 
-// Eski mesajları temizleyerek DOM'un büyüyüp yavaşlamasını engeller
 const MAKS_MESAJ = 200;
 
 function terminalYaz(mesaj, stil = 'term-line') {
@@ -110,10 +329,7 @@ function chatYaz(kullanici, mesaj, isBot = false) {
     return div;
 }
 
-// Twitch'e gönderilen geçici (cooldown) mesajını chat'te gösterir ve
-// 5 saniye sonra hem Twitch'ten hem de yerel panelden silinmek üzere kuyruğa alır.
 function geciciMesajGonder(mesajMetni) {
-    // Çok eskide kalmış, echo'su hiç gelmemiş kayıtları temizle
     const eskiSinir = Date.now() - 30000;
     silinecekMesajKuyrugu = silinecekMesajKuyrugu.filter(k => k.zaman > eskiSinir);
 
@@ -122,7 +338,6 @@ function geciciMesajGonder(mesajMetni) {
     silinecekMesajKuyrugu.push({ metin: mesajMetni, chatDiv, silindi: false, zaman: Date.now() });
 }
 
-// Twitch'ten belirli bir mesaj ID'sini siler (moderator yetkisi gerektirir)
 function mesajSil(msgId) {
     ws.send(`PRIVMSG #${KANAL_ADI} :/delete ${msgId}`);
     terminalYaz(`Cooldown mesajı Twitch'ten silindi (ID: ${msgId})`, "system-info");
@@ -186,15 +401,11 @@ function baglan() {
             const mesaj = match[2].trim();
             const isSelf = (kullanici.toLowerCase() === BOT_ADI.toLowerCase());
 
-            // Botun KENDİ gönderdiği mesajların echo'su gelir. Eğer bu mesaj
-            // silinmek üzere bekleyen bir cooldown mesajıysa; ID'sini yakalayıp
-            // 5 saniye sonra /delete ile siliyoruz. Echo'yu tekrar ekrana basmıyoruz.
             if (isSelf) {
                 const idx = silinecekMesajKuyrugu.findIndex(k => k.metin === mesaj && !k.silindi);
                 if (idx !== -1) {
                     const kayit = silinecekMesajKuyrugu[idx];
                     silinecekMesajKuyrugu.splice(idx, 1);
-                    // Twitch tag'lerinden id alanı: id=<uuid> formatında
                     const idEslesmesi = data.match(/id=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) 
                                      || data.match(/id=([0-9a-z-]+)/i);
                     if (idEslesmesi && idEslesmesi[1]) {
@@ -208,9 +419,8 @@ function baglan() {
                     } else {
                         terminalYaz(`Cooldown mesajı için ID bulunamadı, otomatik silme atlanıyor.`, "system-info");
                     }
-                    return; // echo zaten yerel panelde gösterildi, tekrar gösterme
+                    return;
                 }
-                // Botun kendi mesajı ama kuyrukta yoksa (normal komut cevapları vs.) — ekrana yaz ve geç
                 chatYaz(kullanici, mesaj, true);
                 return;
             }
@@ -220,6 +430,49 @@ function baglan() {
 
             const msgLower = mesaj.toLowerCase();
 
+            // ========== ÇEKİLİŞ KOMUTLARI ==========
+            if (msgLower === '!katılan' || msgLower === '!katilan' || msgLower === '!katil') {
+                if (cekilisKatilimcilar.length === 0) {
+                    const cevap = `@${kullanici} Henüz çekilişe katılan olmadı veya çekiliş aktif değil.`;
+                    ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                    chatYaz(BOT_ADI, cevap, true);
+                } else {
+                    const gorulen = new Set();
+                    const benzersiz = cekilisKatilimcilar.filter(k => {
+                        const varMi = gorulen.has(k.kullanici);
+                        gorulen.add(k.kullanici);
+                        return !varMi;
+                    });
+                    
+                    const katilanListe = benzersiz.map(k => k.kullanici).join(', ');
+                    const cevap = `@${kullanici} Çekilişe katılanlar (${benzersiz.length} kişi): ${katilanListe}`;
+                    ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                    chatYaz(BOT_ADI, cevap, true);
+                    terminalYaz(`!katilan sorgusu: ${kullanici} katılımcı listesini istedi.`, "command-trigger");
+                }
+                return;
+            }
+            
+            else if (msgLower === cekilisKomut.toLowerCase()) {
+                if (!cekilisAktif) {
+                    terminalYaz(`Çekiliş aktif değil! ${kullanici} katılmaya çalıştı.`, "system-info");
+                    return;
+                }
+                
+                cekilisKatilimcilar.push({ kullanici: kullanici, zaman: Date.now() });
+                terminalYaz(`🎯 ${kullanici} çekilişe katıldı! (Toplam: ${cekilisKatilimcilar.length})`, "command-trigger");
+                
+                katilimciSayisiSpan.textContent = cekilisKatilimcilar.length;
+                
+                if (cekilisBildirim === 'evet') {
+                    const cevap = `@${kullanici} ✅ Çekilişe katıldın! Başarılar! 🍀`;
+                    ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
+                    chatYaz(BOT_ADI, cevap, true);
+                }
+                return;
+            }
+
+            // Normal komutlar
             if (msgLower === '!dc' || msgLower === '!discord') {
                 const cevap = `@${kullanici} Discord Sunucumuz: ${DC_LINK}`;
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
@@ -235,30 +488,26 @@ function baglan() {
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                 chatYaz(BOT_ADI, cevap, true);
             }
-            /* GELİŞMİŞ ŞANS MOTORU ALANI */
             else if (msgLower === '!kazan') {
                 const simdi = Date.now();
 
-                // 1. Global Cooldown Kontrolü
                 if (simdi - sonKullanimGlobal < GLOBAL_COOLDOWN_SURESI * 1000) {
                     const kalanGlobal = Math.ceil((GLOBAL_COOLDOWN_SURESI * 1000 - (simdi - sonKullanimGlobal)) / 1000);
                     terminalYaz(`Komut engellendi (Global Cooldown): !kazan -> Gönderen: ${kullanici} (Kalan: ${kalanGlobal}sn)`, "system-info");
                     geciciMesajGonder(`@${kullanici} ⏳ Global cooldown'a takıldınız! ${kalanGlobal} saniye sonra tekrar deneyin.`);
-                    return; // Komutu iptal et, cooldown mesajı 5 sn sonra otomatik silinir
+                    return;
                 }
 
-                // 2. Kullanıcı Cooldown Kontrolü
                 if (sonKullanimKullanici[kullanici]) {
                     const gecenSure = (simdi - sonKullanimKullanici[kullanici]) / 1000;
                     if (gecenSure < KULLANICI_COOLDOWN_SURESI) {
                         const kalanSure = Math.ceil(KULLANICI_COOLDOWN_SURESI - gecenSure);
                         terminalYaz(`Komut engellendi (Kullanıcı Cooldown): !kazan -> Gönderen: ${kullanici} (Kalan: ${kalanSure}sn)`, "system-info");
                         geciciMesajGonder(`@${kullanici} ⏳ Kişisel cooldown'a takıldınız! ${kalanSure} saniye sonra tekrar deneyin.`);
-                        return; // Komutu iptal et, cooldown mesajı 5 sn sonra otomatik silinir
+                        return;
                     }
                 }
 
-                // Cooldown sürelerini güncelle
                 sonKullanimGlobal = simdi;
                 sonKullanimKullanici[kullanici] = simdi;
 
@@ -288,14 +537,13 @@ function baglan() {
 
                 const sonucSayi = Math.floor(Math.random() * (secilenAralik.max - secilenAralik.min + 1)) + secilenAralik.min;
                 
-                // İstediğin Yeni Çıktı Formatı
                 const cevap = `@${kullanici} Sayı : [${secilenAralik.etiket}] %${sonucSayi}`;
                 
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                 chatYaz(BOT_ADI, cevap, true);
             }
             else if (msgLower === '!yardım' || msgLower === '!yardim' || msgLower === '!komutlar') {
-                const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !kazan`;
+                const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !kazan, ${cekilisKomut}, !katılan`;
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                 chatYaz(BOT_ADI, cevap, true);
             }
@@ -332,7 +580,8 @@ function ayarlariKaydet() {
 
     SANS_HAVUZU = dinamikHavuz;
 
-    // Ayarlar kaydolduğunda cooldown hafızasını sıfırlayalım
+    cekilisAyarlariniGuncelle();
+
     sonKullanimKullanici = {};
     sonKullanimGlobal = 0;
 
@@ -346,4 +595,5 @@ function ayarlariKaydet() {
 
 // Başlangıç tetiklemeleri
 tabloyuDoldur();
+cekilisUIguncelle();
 baglan();
