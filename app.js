@@ -4,9 +4,7 @@ const OAUTH_KEY = 'oauth:3ivyx75i7rf2uxzfk8p8sydksnle7s';
 let KANAL_ADI = 'davidkaan06';
 let DC_LINK = 'https://discord.gg/h2As7yGG8b';
 let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
-let LRN_LINK = 'https://lirin.to/register?ref=david';
-let BAE_LINK = 'https://baerim.eu/a/david';
-let TRI_LINK = 'https://triarchonline.com/@david';
+let SV_LINK = 'https://eteria.to/register?ref=david';
 
 // COOLDOWN AYARLARI (Saniye Cinsinden)
 const KULLANICI_COOLDOWN_SURESI = 30;
@@ -510,18 +508,8 @@ function baglan() {
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                 chatYaz(BOT_ADI, cevap, true);
             } 
-            else if (msgLower === '!lrn' || msgLower === '!learn') {
-                const cevap = `@${kullanici} Kayıt Linki: ${LRN_LINK}`;
-                ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
-                chatYaz(BOT_ADI, cevap, true);
-            } 
-            else if (msgLower === '!bae') {
-                const cevap = `@${kullanici} Bae Linki: ${BAE_LINK}`;
-                ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
-                chatYaz(BOT_ADI, cevap, true);
-            }
-            else if (msgLower === '!tri' || msgLower === '!triarch') {
-                const cevap = `@${kullanici} Triarch Linki: ${TRI_LINK}`;
+            else if (msgLower === '!sv') {
+                const cevap = `@${kullanici} Kayıt Linki: ${SV_LINK}`;
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                 chatYaz(BOT_ADI, cevap, true);
             }
@@ -585,7 +573,7 @@ function baglan() {
                 chatYaz(BOT_ADI, cevap, true);
             }
             else if (msgLower === '!yardım' || msgLower === '!yardim' || msgLower === '!komutlar') {
-                const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !lrn, !bae, !tri, !kazan, ${cekilisKomut}, !katılan`;
+                const cevap = `@${kullanici} Kullanabileceğiniz komutlar: !dc, !yt, !sv, !kazan, ${cekilisKomut}, !katılan`;
                 ws.send(`PRIVMSG #${KANAL_ADI} :${cevap}`);
                 chatYaz(BOT_ADI, cevap, true);
             }
@@ -606,16 +594,12 @@ function ayarlariKaydet() {
     const targetInp = document.getElementById('targetChannelInput');
     const dcInp = document.getElementById('dcLinkInput');
     const ytInp = document.getElementById('ytLinkInput');
-    const lrnInp = document.getElementById('lrnLinkInput');
-    const baeInp = document.getElementById('baeLinkInput');
-    const triInp = document.getElementById('triLinkInput');
+    const svInp = document.getElementById('svLinkInput');
 
     if(targetInp) KANAL_ADI = targetInp.value.trim().toLowerCase();
     if(dcInp) DC_LINK = dcInp.value.trim();
     if(ytInp) YT_LINK = ytInp.value.trim();
-    if(lrnInp) LRN_LINK = lrnInp.value.trim();
-    if(baeInp) BAE_LINK = baeInp.value.trim();
-    if(triInp) TRI_LINK = triInp.value.trim();
+    if(svInp) SV_LINK = svInp.value.trim();
     
     const dinamikHavuz = [];
     const rows = document.querySelectorAll('.prob-row');
