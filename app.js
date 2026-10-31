@@ -1,9 +1,9 @@
 const BOT_ADI   = 'fluexcode';  
 const OAUTH_KEY = 'oauth:3ivyx75i7rf2uxzfk8p8sydksnle7s'; 
 
-let KANAL_ADI = 'davidkaan06';
+let KANAL_ADI = 'davidkaan36';
 let DC_LINK = 'https://discord.gg/h2As7yGG8b';
-let YT_LINK = 'https://www.youtube.com/@davidkaan2246';
+let YT_LINK = 'https://www.youtube.com/@ddavidkaan';
 let SV_LINK = 'https://eteria.to/register?ref=david';
 
 // COOLDOWN AYARLARI (Saniye Cinsinden)
